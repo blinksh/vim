@@ -7,7 +7,7 @@
 "		(ss) repaired several quoting and grouping glitches
 "		(ss) fixed regex parsing issue with multiple qualifiers [gi]
 "		(ss) additional factoring of keywords, globals, and members
-" Last Change:	2019 Sep 27
+" Last Change:	2022 Jun 09
 " 		2013 Jun 12: adjusted javaScriptRegexpString (Kevin Locke)
 " 		2018 Apr 14: adjusted javaScriptRegexpString (LongJohnCoder)
 
@@ -39,16 +39,24 @@ syn region  javaScriptStringT	       start=+`+  skip=+\\\\\|\\`+  end=+`+	contai
 
 syn region  javaScriptEmbed	       start=+${+  end=+}+	contains=@javaScriptEmbededExpr
 
+" number handling by Christopher Leonard chris.j.leonard@gmx.com
 syn match   javaScriptSpecialCharacter "'\\.'"
-syn match   javaScriptNumber	       "-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
+syn match   javaScriptNumber           "\<0[bB][0-1]\+\(_[0-1]\+\)*\>"
+syn match   javaScriptNumber           "\<0[oO][0-7]\+\(_[0-7]\+\)*\>"
+syn match   javaScriptNumber           "\<0\([0-7]\+\(_[0-7]\+\)*\)\?\>"
+syn match   javaScriptNumber           "\<0[xX][0-9a-fA-F]\+\(_[0-9a-fA-F]\+\)*\>"
+syn match   javaScriptNumber           "\<\d\+\(_\d\+\)*[eE][+-]\?\d\+\>"
+syn match   javaScriptNumber           "\<[1-9]\d*\(_\d\+\)*\(\.\(\d\+\(_\d\+\)*\([eE][+-]\?\d\+\)\?\)\?\)\?\>"
+syn match   javaScriptNumber           "\<\(\d\+\(_\d\+\)*\)\?\.\d\+\(_\d\+\)*\([eE][+-]\?\d\+\)\?\>"
+syn match   javaScriptNumber           "\<\d\+\(_\d\+\)*\.\(\d\+\(_\d\+\)*\([eE][+-]\?\d\+\)\?\)\?\>"
 syn region  javaScriptRegexpString     start=+[,(=+]\s*/[^/*]+ms=e-1,me=e-1 skip=+\\\\\|\\/+ end=+/[gimuys]\{0,2\}\s*$+ end=+/[gimuys]\{0,2\}\s*[+;.,)\]}]+me=e-1 end=+/[gimuys]\{0,2\}\s\+\/+me=e-1 contains=@htmlPreproc,javaScriptComment oneline
 
 syn keyword javaScriptConditional	if else switch
-syn keyword javaScriptRepeat		while for do in
+syn keyword javaScriptRepeat		while for do in of
 syn keyword javaScriptBranch		break continue
 syn keyword javaScriptOperator		new delete instanceof typeof
 syn keyword javaScriptType		Array Boolean Date Function Number Object String RegExp
-syn keyword javaScriptStatement		return with await
+syn keyword javaScriptStatement		return with await yield
 syn keyword javaScriptBoolean		true false
 syn keyword javaScriptNull		null undefined
 syn keyword javaScriptIdentifier	arguments this var let
@@ -77,10 +85,10 @@ else
     syn match	javaScriptParens	   "[()]"
 endif
 
-syn sync fromstart
-syn sync maxlines=100
-
 if main_syntax == "javascript"
+  syn sync fromstart
+  syn sync maxlines=100
+
   syn sync ccomment javaScriptComment
 endif
 
@@ -95,7 +103,7 @@ hi def link javaScriptStringD		String
 hi def link javaScriptStringT		String
 hi def link javaScriptCharacter		Character
 hi def link javaScriptSpecialCharacter	javaScriptSpecial
-hi def link javaScriptNumber		javaScriptValue
+hi def link javaScriptNumber		Number
 hi def link javaScriptConditional		Conditional
 hi def link javaScriptRepeat		Repeat
 hi def link javaScriptBranch		Conditional

@@ -19,6 +19,7 @@ void diff_set_topline(win_T *fromwin, win_T *towin);
 int diffopt_changed(void);
 int diffopt_horizontal(void);
 int diffopt_hiddenoff(void);
+int diffopt_closeoff(void);
 int diff_find_change(win_T *wp, linenr_T lnum, int *startp, int *endp);
 int diff_infold(win_T *wp, linenr_T lnum);
 void nv_diffgetput(int put, long count);
@@ -29,4 +30,5 @@ linenr_T diff_get_corresponding_line(buf_T *buf1, linenr_T lnum1);
 linenr_T diff_lnum_win(linenr_T lnum, win_T *wp);
 void f_diff_filler(typval_T *argvars, typval_T *rettv);
 void f_diff_hlID(typval_T *argvars, typval_T *rettv);
+void f_diff(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

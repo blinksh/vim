@@ -1,6 +1,7 @@
 " ---------------------------------------------------------------------
 " getscriptPlugin.vim
-"  Author:	Charles E. Campbell
+"  Maintainer:	This runtime file is looking for a new maintainer.
+"  Original Author:	Charles E. Campbell
 "  Date:	Nov 29, 2013
 "  Installing:	:help glvs-install
 "  Usage:	:help glvs
@@ -30,7 +31,7 @@ set cpo&vim
 "  Public Interface: {{{1
 com!        -nargs=0 GetLatestVimScripts call getscript#GetLatestVimScripts()
 com!        -nargs=0 GetScripts          call getscript#GetLatestVimScripts()
-silent! com -nargs=0 GLVS                call getscript#GetLatestVimScripts()
+sil! com    -nargs=0 GLVS                call getscript#GetLatestVimScripts()
 
 " ---------------------------------------------------------------------
 " Restore Options: {{{1

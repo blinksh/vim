@@ -32,21 +32,22 @@ first:
 
 # Some make programs use the last target for the $@ default; put the other
 # targets separately to always let $@ expand to "first" by default.
-all install uninstall tools config configure reconfig proto depend lint tags types test scripttests test_libvterm unittests testclean clean distclean:
+all install uninstall tools config configure reconfig proto depend lint tags types test scripttests testtiny test_libvterm unittests testclean clean distclean:
 	@if test ! -f src/auto/config.mk; then \
 		cp src/config.mk.dist src/auto/config.mk; \
 	fi
 	@echo "Starting make in the src directory."
 	@echo "If there are problems, cd to the src directory and run make there"
 	cd src && $(MAKE) $@
-	@# When the target is "test" also run the indent tests.
-	@if test "$@" = "test"; then \
+	@# When the target is "test" also run the indent and syntax tests.
+	@if test "$@" = "test" -o "$@" = "testtiny"; then \
 		$(MAKE) indenttest; \
+		$(MAKE) syntaxtest; \
 	fi
-	@# When the target is "clean" also clean for the indent tests.
+	@# When the target is "clean" also clean for the indent and syntax tests.
 	@if test "$@" = "clean" -o "$@" = "distclean" -o "$@" = "testclean"; then \
-		cd runtime/indent && \
-			$(MAKE) clean; \
+		(cd runtime/indent && $(MAKE) clean); \
+		(cd runtime/syntax && $(MAKE) clean); \
 	fi
 
 # Executable used for running the indent tests.
@@ -56,7 +57,15 @@ indenttest:
 	cd runtime/indent && \
 		$(MAKE) clean && \
 		$(MAKE) test VIM="$(VIM_FOR_INDENTTEST)"
-		
+
+# Executable used for running the syntax tests.
+VIM_FOR_SYNTAXTEST = ../../src/vim
+
+syntaxtest:
+	cd runtime/syntax && \
+		$(MAKE) clean && \
+		$(MAKE) test VIMPROG="$(VIM_FOR_SYNTAXTEST)"
+
 
 #########################################################################
 # 2. Creating the various distribution files.
@@ -84,20 +93,19 @@ indenttest:
 #    To do all this you need the Unix archive and compiled binaries.
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
-MAJOR = 8
+MAJOR = 9
 MINOR = 1
 
 # CHECKLIST for creating a new version:
 #
 # - Update Vim version number.  For a test version in: src/version.h,
 #   READMEdir/Contents, MAJOR/MINOR above, VIMMAJOR and VIMMINOR in
-#   src/Makefile, README.txt, README.md, READMEdir/README*.txt,
+#   src/Makefile, README.txt, README.md, src/README.md, READMEdir/README*.txt,
 #   runtime/doc/*.txt and make nsis/gvim_version.nsh.
-#   For a minor/major version: src/GvimExt/GvimExt.reg, src/vim.def,
-#   src/gvim.exe.mnf.
-# - Compile Vim with GTK, Perl, Python, Python3, TCL, Ruby, MZscheme, Lua (if
-#   you can make it all work), Cscope and "huge" features.  Exclude workshop
-#   and SNiFF.
+#   For a minor/major version: src/GvimExt/GvimExt.reg, src/vim.manifest.
+# - Compile Vim with GTK, Perl, Python, Python3, TCL, Ruby, Lua, Cscope and
+#   "huge" features.  Add MZscheme if you can make it work.
+#   Use "make reconfig" after selecting the configure arguments.
 # - With these features: "make proto" (requires cproto and Motif installed;
 #   ignore warnings for missing include files, fix problems for syntax errors).
 # - With these features: "make depend" (works best with gcc).
@@ -106,15 +114,12 @@ MINOR = 1
 # - If you have valgrind, enable it in src/testdir/Makefile and run "make
 #   test".  Enable EXITFREE, disable GUI, scheme and tcl to avoid false alarms.
 #   Check the valgrind output.
-# - If you have the efence library, enable it in "src/Makefile" and run "make
-#   test".  Disable Python and Ruby to avoid trouble with threads (efence is
-#   not threadsafe).
 # - Adjust the date and other info in src/version.h.
 # - Correct included_patches[] in src/version.c.
 # - Check for missing entries in runtime/makemenu.vim (with checkmenu script).
 # - Check for missing options in runtime/optwin.vim et al. (with check.vim).
 # - Do "make menu" to update the runtime/synmenu.vim file.
-# - Add remarks for changes to runtime/doc/version8.txt.
+# - Add remarks for changes to runtime/doc/version9.txt.
 # - Check that runtime/doc/help.txt doesn't contain entries in "LOCAL
 #   ADDITIONS".
 # - In runtime/doc run "make" and "make html" to check for errors.
@@ -148,7 +153,7 @@ MINOR = 1
 # - > make dossrc
 #   > make dosrt
 #   Unpack dist/vim##rt.zip and dist/vim##src.zip on an MS-Windows PC.
-#   This creates the directory vim/vim81 and puts all files in there.
+#   This creates the directory vim/vim90 and puts all files in there.
 # Win32 console version build:
 # - See src/INSTALLpc.txt for installing the compiler and SDK.
 # - Set environment for Visual C++ 2015:
@@ -156,7 +161,7 @@ MINOR = 1
 #   > msvc2015.bat
 # - Build the console binary:
 #   > nmake -f Make_mvc.mak
-# - Run the tests and check the ouput:
+# - Run the tests and check the output:
 #   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak test
 # - Rename (using ../tools/rename.bat):
@@ -202,11 +207,9 @@ MINOR = 1
 # - copy these files (get them from a binary archive or build them):
 #	gvimext.dll in src/GvimExt
 #	gvimext64.dll in src/GvimExt
-#	VisVim.dll in src/VisVim
-#   Note: VisVim needs to be build with MSVC 5, newer versions don't work.
 #   gvimext64.dll can be obtained from:
 #   https://github.com/vim/vim-win32-installer/releases
-#	It is part of gvim_8.0.*_x64.zip as vim/vim80/GvimExt/gvimext64.dll.
+#	It is part of gvim_9.0.*_x64.zip as vim/vim90/GvimExt/gvimext64.dll.
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
 #   version).  Also put winpty32.dll and winpty-agent.exe there.
 # - go to ../nsis and do:
@@ -418,6 +421,7 @@ dossrc: dist no_title.vim dist/$(COMMENT_SRC) \
 	tar cf - \
 		$(SRC_ALL) \
 		$(SRC_DOS) \
+		$(SRC_DOS_BIN) \
 		$(SRC_AMI_DOS) \
 		$(SRC_DOS_UNIX) \
 		runtime/doc/uganda.nsis.txt \
@@ -427,9 +431,6 @@ dossrc: dist no_title.vim dist/$(COMMENT_SRC) \
 	rmdir dist/vim/$(VIMRTDIR)/runtime
 	# This file needs to be in dos fileformat for NSIS.
 	$(VIM) -e -X -u no_title.vim -c ":set tx|wq" dist/vim/$(VIMRTDIR)/doc/uganda.nsis.txt
-	tar cf - \
-		$(SRC_DOS_BIN) \
-		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	cd dist && zip -9 -rD -z vim$(VERSION)src.zip vim <$(COMMENT_SRC)
 
 runtime/doc/uganda.nsis.txt: runtime/doc/uganda.txt
@@ -560,8 +561,6 @@ dosbin_ole: dist no_title.vim dist/$(COMMENT_OLE)
 	cp uninstallw32.exe dist/vim/$(VIMRTDIR)/uninstall.exe
 	cp gvimext.dll dist/vim/$(VIMRTDIR)/gvimext.dll
 	cp README_ole.txt dist/vim/$(VIMRTDIR)
-	cp src/VisVim/VisVim.dll dist/vim/$(VIMRTDIR)/VisVim.dll
-	cp src/VisVim/README_VisVim.txt dist/vim/$(VIMRTDIR)
 	cd dist && zip -9 -rD -z gvim$(VERSION)ole.zip vim <$(COMMENT_OLE)
 	cp gvim_ole.pdb dist/gvim$(VERSION)ole.pdb
 

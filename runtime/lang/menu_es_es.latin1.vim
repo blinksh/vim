@@ -3,7 +3,7 @@
 " Last translator:	Omar Campagne Polaino <ocampagne@gmail.com>
 " Version:		7.2.245
 " Last Change:		2012 May 01
-"
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -38,7 +38,7 @@ menutrans &File				&Archivo
 menutrans &Open\.\.\.<Tab>:e		&Abrir\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	A&brir\ en\ otra\ ventana\.\.\.<Tab>:sp
 menutrans &New<Tab>:enew		&Nuevo<Tab>:enew
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	Abrir\ pes&taña\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Abrir\ pes&taña\.\.\.<Tab>:tabnew
 menutrans &Close<Tab>:close		&Cerrar<Tab>:close
 menutrans &Save<Tab>:w			&Guardar<Tab>:w
 menutrans Save\ &As\.\.\.<Tab>:sav	Guardar\ &como\.\.\.<Tab>:sav

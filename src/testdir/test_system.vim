@@ -13,9 +13,9 @@ func Test_System()
   else
     call assert_equal("123\n", system('echo 123'))
     call assert_equal(["123\r"], systemlist('echo 123'))
-    call assert_equal("123\n",   system('more', '123'))
-    call assert_equal(["123\r"], systemlist('more', '123'))
-    call assert_equal(["as\r", "df\r"], systemlist('more', ["as\<NL>df"]))
+    call assert_equal("123\n",   system('more.com', '123'))
+    call assert_equal(["123\r"], systemlist('more.com', '123'))
+    call assert_equal(["as\r", "df\r"], systemlist('more.com', ["as\<NL>df"]))
   endif
 
   new Xdummy
@@ -42,7 +42,7 @@ func Test_System()
     let out = systemlist('cat', bufnr('%'))
     call assert_equal(['asdf', "pw\<NL>er", 'xxxx'],  out)
   else
-    let out = systemlist('more', bufnr('%'))
+    let out = systemlist('more.com', bufnr('%'))
     call assert_equal(["asdf\r", "pw\r", "er\r", "xxxx\r"],  out)
   endif
   bwipe!
@@ -55,7 +55,7 @@ func Test_system_exmode()
     let cmd = ' -es -c "source Xscript" +q; echo "result=$?"'
     " Need to put this in a script, "catch" isn't found after an unknown
     " function.
-    call writefile(['try', 'call doesnotexist()', 'catch', 'endtry'], 'Xscript')
+    call writefile(['try', 'call doesnotexist()', 'catch', 'endtry'], 'Xscript', 'D')
     let a = system(GetVimCommand() . cmd)
     call assert_match('result=0', a)
     call assert_equal(0, v:shell_error)
@@ -71,7 +71,6 @@ func Test_system_exmode()
   let cmd = ' -es -c "source Xscript" +q'
   let a = system(GetVimCommand() . cmd)
   call assert_notequal(0, v:shell_error)
-  call delete('Xscript')
 
   if has('unix') " echo $? only works on Unix
     let cmd = ' -es -c "call doesnotexist()" +q; echo $?'
@@ -143,3 +142,5 @@ func Test_system_with_shell_quote()
     call delete('Xdir with spaces', 'rf')
   endtry
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

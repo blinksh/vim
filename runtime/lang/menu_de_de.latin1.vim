@@ -5,6 +5,7 @@
 "			        Johannes Zellner <johannes@zellner.org>
 " Last Change:	Mon, 1 April 2019
 " vim:set foldmethod=marker tabstop=8:
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -24,7 +25,7 @@ endif
 menutrans &File				&Datei
 menutrans &Open\.\.\.<Tab>:e		&Öffnen\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	In\ geteiltem\ &Fenster\ öffnen\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	In\ neuem\ &Tab\ öffnen\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	In\ neuem\ &Tab\ öffnen\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Neue\ Datei<Tab>:enew
 menutrans &Close<Tab>:close		S&chließen<Tab>:close
 menutrans &Save<Tab>:w			&Speichern<Tab>:w
@@ -188,7 +189,7 @@ menutrans Set\ '&filetype'\ too			Auch\ '&filetype'\ setzen
 menutrans &Off					&Aus
 menutrans &Manual				&Manuell
 menutrans A&utomatic				A&utomatisch
-menutrans on/off\ for\ &This\ file		An/Aus (diese\ &Datei)
+menutrans on/off\ for\ &This\ file		An/Aus\ (diese\ &Datei)
 menutrans Co&lor\ test				Test\ der\ Farben
 menutrans &Highlight\ test			Test\ der\ Un&terstreichungen
 menutrans &Convert\ to\ HTML			Konvertieren\ nach\ &HTML

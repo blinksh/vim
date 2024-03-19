@@ -1,13 +1,14 @@
 " Vim syntax file
 " Language:	OpenSSH server configuration file (sshd_config)
 " Author:	David Necas (Yeti)
-" Maintainer:	Dominik Fischer <d dot f dot fischer at web dot de>
+" Maintainer:	Jakub Jelen <jakuje at gmail dot com>
+" Previous Maintainer:	Dominik Fischer <d dot f dot fischer at web dot de>
 " Contributor:	Thilo Six
 " Contributor:  Leonard Ehrenfried <leonard.ehrenfried@web.de>	
 " Contributor:  Karsten Hopp <karsten@redhat.com>
 " Originally:	2009-07-09
-" Last Change:	2019-05-31
-" SSH Version:	7.9p1
+" Last Change:	2022 Nov 10
+" SSH Version:	8.5p1
 "
 
 " Setup
@@ -58,12 +59,12 @@ syn match sshdconfigCiphers "\<aes256-gcm@openssh\.com\>"
 syn match sshdconfigCiphers "\<chacha20-poly1305@openssh\.com\>"
 
 syn keyword sshdconfigMAC hmac-sha1
-syn keyword sshdconfigMAC mac-sha1-96
-syn keyword sshdconfigMAC mac-sha2-256
-syn keyword sshdconfigMAC mac-sha2-512
-syn keyword sshdconfigMAC mac-md5
-syn keyword sshdconfigMAC mac-md5-96
-syn keyword sshdconfigMAC mac-ripemd160
+syn keyword sshdconfigMAC hmac-sha1-96
+syn keyword sshdconfigMAC hmac-sha2-256
+syn keyword sshdconfigMAC hmac-sha2-512
+syn keyword sshdconfigMAC hmac-md5
+syn keyword sshdconfigMAC hmac-md5-96
+syn keyword sshdconfigMAC hmac-ripemd160
 syn match   sshdconfigMAC "\<hmac-ripemd160@openssh\.com\>"
 syn match   sshdconfigMAC "\<umac-64@openssh\.com\>"
 syn match   sshdconfigMAC "\<umac-128@openssh\.com\>"
@@ -79,16 +80,24 @@ syn match   sshdconfigMAC "\<umac-128-etm@openssh\.com\>"
 
 syn keyword sshdconfigHostKeyAlgo ssh-ed25519
 syn match sshdconfigHostKeyAlgo "\<ssh-ed25519-cert-v01@openssh\.com\>"
+syn match sshdconfigHostKeyAlgo "\<sk-ssh-ed25519@openssh\.com\>"
+syn match sshdconfigHostKeyAlgo "\<sk-ssh-ed25519-cert-v01@openssh\.com\>"
 syn keyword sshdconfigHostKeyAlgo ssh-rsa
+syn keyword sshdconfigHostKeyAlgo rsa-sha2-256
+syn keyword sshdconfigHostKeyAlgo rsa-sha2-512
 syn keyword sshdconfigHostKeyAlgo ssh-dss
 syn keyword sshdconfigHostKeyAlgo ecdsa-sha2-nistp256
 syn keyword sshdconfigHostKeyAlgo ecdsa-sha2-nistp384
 syn keyword sshdconfigHostKeyAlgo ecdsa-sha2-nistp521
 syn match sshdconfigHostKeyAlgo "\<ssh-rsa-cert-v01@openssh\.com\>"
+syn match sshdconfigHostKeyAlgo "\<rsa-sha2-256-cert-v01@openssh\.com\>"
+syn match sshdconfigHostKeyAlgo "\<rsa-sha2-512-cert-v01@openssh\.com\>"
 syn match sshdconfigHostKeyAlgo "\<ssh-dss-cert-v01@openssh\.com\>"
 syn match sshdconfigHostKeyAlgo "\<ecdsa-sha2-nistp256-cert-v01@openssh\.com\>"
 syn match sshdconfigHostKeyAlgo "\<ecdsa-sha2-nistp384-cert-v01@openssh\.com\>"
 syn match sshdconfigHostKeyAlgo "\<ecdsa-sha2-nistp521-cert-v01@openssh\.com\>"
+syn match sshdconfigHostKeyAlgo "\<sk-ecdsa-sha2-nistp256@openssh\.com\>"
+syn match sshdconfigHostKeyAlgo "\<sk-ecdsa-sha2-nistp256-cert-v01@openssh\.com\>"
 
 syn keyword sshdconfigRootLogin prohibit-password without-password forced-commands-only
 
@@ -108,12 +117,17 @@ syn keyword sshdconfigIPQoS	ef lowdelay throughput reliability
 
 syn keyword sshdconfigKexAlgo diffie-hellman-group1-sha1
 syn keyword sshdconfigKexAlgo diffie-hellman-group14-sha1
+syn keyword sshdconfigKexAlgo diffie-hellman-group14-sha256
+syn keyword sshdconfigKexAlgo diffie-hellman-group16-sha512
+syn keyword sshdconfigKexAlgo diffie-hellman-group18-sha512
 syn keyword sshdconfigKexAlgo diffie-hellman-group-exchange-sha1
 syn keyword sshdconfigKexAlgo diffie-hellman-group-exchange-sha256
 syn keyword sshdconfigKexAlgo ecdh-sha2-nistp256
 syn keyword sshdconfigKexAlgo ecdh-sha2-nistp384
 syn keyword sshdconfigKexAlgo ecdh-sha2-nistp521
+syn keyword sshdconfigKexAlgo curve25519-sha256
 syn match sshdconfigKexAlgo "\<curve25519-sha256@libssh\.org\>"
+syn match sshdconfigKexAlgo "\<sntrup4591761x25519-sha512@tinyssh\.org\>"
 
 syn keyword sshdconfigTunnel	point-to-point ethernet
 
@@ -181,12 +195,14 @@ syn keyword sshdconfigKeyword HostCertificate
 syn keyword sshdconfigKeyword HostKey
 syn keyword sshdconfigKeyword HostKeyAgent
 syn keyword sshdconfigKeyword HostKeyAlgorithms
+syn keyword sshdconfigKeyword HostbasedAcceptedAlgorithms
 syn keyword sshdconfigKeyword HostbasedAcceptedKeyTypes
 syn keyword sshdconfigKeyword HostbasedAuthentication
 syn keyword sshdconfigKeyword HostbasedUsesNameFromPacketOnly
 syn keyword sshdconfigKeyword IPQoS
 syn keyword sshdconfigKeyword IgnoreRhosts
 syn keyword sshdconfigKeyword IgnoreUserKnownHosts
+syn keyword sshdconfigKeyword Include
 syn keyword sshdconfigKeyword KbdInteractiveAuthentication
 syn keyword sshdconfigKeyword KerberosAuthentication
 syn keyword sshdconfigKeyword KerberosGetAFSToken
@@ -198,13 +214,17 @@ syn keyword sshdconfigKeyword KexAlgorithms
 syn keyword sshdconfigKeyword KeyRegenerationInterval
 syn keyword sshdconfigKeyword ListenAddress
 syn keyword sshdconfigKeyword LogLevel
+syn keyword sshdconfigKeyword LogVerbose
 syn keyword sshdconfigKeyword LoginGraceTime
 syn keyword sshdconfigKeyword MACs
 syn keyword sshdconfigKeyword Match
 syn keyword sshdconfigKeyword MaxAuthTries
 syn keyword sshdconfigKeyword MaxSessions
 syn keyword sshdconfigKeyword MaxStartups
+syn keyword sshdconfigKeyword ModuliFile
 syn keyword sshdconfigKeyword PasswordAuthentication
+syn keyword sshdconfigKeyword PerSourceMaxStartups
+syn keyword sshdconfigKeyword PerSourceNetBlockSize
 syn keyword sshdconfigKeyword PermitBlacklistedKeys
 syn keyword sshdconfigKeyword PermitEmptyPasswords
 syn keyword sshdconfigKeyword PermitListen
@@ -219,13 +239,17 @@ syn keyword sshdconfigKeyword Port
 syn keyword sshdconfigKeyword PrintLastLog
 syn keyword sshdconfigKeyword PrintMotd
 syn keyword sshdconfigKeyword Protocol
+syn keyword sshdconfigKeyword PubkeyAcceptedAlgorithms
 syn keyword sshdconfigKeyword PubkeyAcceptedKeyTypes
 syn keyword sshdconfigKeyword PubkeyAuthentication
+syn keyword sshdconfigKeyword PubkeyAuthOptions
 syn keyword sshdconfigKeyword RSAAuthentication
 syn keyword sshdconfigKeyword RekeyLimit
+syn keyword sshdconfigKeyword RequiredRSASize
 syn keyword sshdconfigKeyword RevokedKeys
 syn keyword sshdconfigKeyword RDomain
 syn keyword sshdconfigKeyword RhostsRSAAuthentication
+syn keyword sshdconfigKeyword SecurityKeyProvider
 syn keyword sshdconfigKeyword ServerKeyBits
 syn keyword sshdconfigKeyword SetEnv
 syn keyword sshdconfigKeyword ShowPatchLevel
@@ -236,6 +260,8 @@ syn keyword sshdconfigKeyword Subsystem
 syn keyword sshdconfigKeyword SyslogFacility
 syn keyword sshdconfigKeyword TCPKeepAlive
 syn keyword sshdconfigKeyword TrustedUserCAKeys
+syn keyword sshdconfigKeyword UseBlacklist
+syn keyword sshdconfigKeyword UseBlocklist
 syn keyword sshdconfigKeyword UseDNS
 syn keyword sshdconfigKeyword UseLogin
 syn keyword sshdconfigKeyword UsePAM

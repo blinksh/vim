@@ -2,6 +2,7 @@
 " Maintainer:           Jiri Sedlak <jiri_sedlak@users.sourceforge.net>
 " Previous maintainer:  Jiri Brezina
 " Based on:             menu.vim (2012-10-21)
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -18,7 +19,7 @@ scriptencoding utf-8
 menutrans &File				&Soubor
 menutrans &Open\.\.\.<Tab>:e		&Otevřít\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Otevřít\ v\ no&vém\ okně\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	Otevřít\ tab\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Otevřít\ tab\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Nový<Tab>:enew
 menutrans &Close<Tab>:close		&Zavřít<Tab>:close
 menutrans &Save<Tab>:w			&Uložit<Tab>:w
@@ -110,7 +111,7 @@ menutrans Build\ &Tags\ File		&Vytvořit\ soubor\ tagů
 if has("spell")
    menutrans &Spelling			&Kontrola\ pravopisu
    menutrans &Spell\ Check\ On		&Zapnout\ kontrolu\ pravopisu
-   menutrans Spell\ Check\ &Off		&Vypnout \kontrolu\ pravopisu
+   menutrans Spell\ Check\ &Off		&Vypnout\ kontrolu\ pravopisu
    menutrans To\ &Next\ error<Tab>]s	&Další\ chyba<Tab>]s
    menutrans To\ &Previous\ error<Tab>[s	&Předchozí\ chyba<Tab>[s
    menutrans Suggest\ &Corrections<Tab>z=	&Navrhnout\ opravy<Tab>z=

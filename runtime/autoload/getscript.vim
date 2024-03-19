@@ -1,6 +1,7 @@
 " ---------------------------------------------------------------------
 " getscript.vim
-"  Author:	Charles E. Campbell
+"  Maintainer: This runtime file is looking for a new maintainer.
+"  Original Author: Charles E. Campbell
 "  Date:	Jan 21, 2014
 "  Version:	36
 "  Installing:	:help glvs-install
@@ -22,7 +23,7 @@ if &cp
 endif
 if v:version < 702
  echohl WarningMsg
- echo "***warning*** this version of getscript needs vim 7.2"
+ echo "***warning*** this version of GetLatestVimScripts needs vim 7.2"
  echohl Normal
  finish
 endif
@@ -130,7 +131,7 @@ fun! getscript#GetLatestVimScripts()
 " insure that wget is executable
   if executable(g:GetLatestVimScripts_wget) != 1
    echoerr "GetLatestVimScripts needs ".g:GetLatestVimScripts_wget." which apparently is not available on your system"
-"   call Dret("GetLatestVimScripts : wget not executable/availble")
+"   call Dret("GetLatestVimScripts : wget not executable/available")
    return
   endif
 
@@ -348,7 +349,7 @@ fun! s:GetOneScript(...)
   set t_ti= t_te= nors
 
  " put current line on top-of-screen and interpret it into
- " a      script identifer  : used to obtain webpage
+ " a      script identifier  : used to obtain webpage
  "        source identifier : used to identify current version
  " and an associated comment: used to report on what's being considered
   if a:0 >= 3

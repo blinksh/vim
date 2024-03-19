@@ -2,7 +2,7 @@
 "
 " Maintainer:	Ernest Adrogué <eadrogue@gmx.net>
 " Last Change:	26 Jul 2017
-"
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -37,7 +37,7 @@ let g:menutrans_help_dialog = "Introduïu el terme sobre el qual necessiteu ajuda
 menutrans &File				&Fitxer
 menutrans &Open\.\.\.<Tab>:e		&Obre\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Obre\ en\ una\ &finestra\ nova\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	Obre\ pestanya\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Obre\ pestanya\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Nou<Tab>:enew
 menutrans &Close<Tab>:close		&Tanca<Tab>:close
 menutrans &Save<Tab>:w			&Desa<Tab>:w
@@ -79,7 +79,7 @@ menutrans &Global\ Settings		Opcions\ &globals
     menutrans Never					&Mai
     menutrans Block\ Selection				&Selecció\ de\ blocs
     menutrans Insert\ mode				Mode\ d'&inserció
-    menutrans Block\ and\ Insert			&Blocs i inserció
+    menutrans Block\ and\ Insert			&Blocs\ i\ inserció
     menutrans Always					S&empre
   menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		Mode\ d'&inserció<Tab>:set\ im!
   menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Co&mpatible\ amb\ Vi<Tab>:set\ cp!

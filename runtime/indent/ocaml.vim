@@ -3,8 +3,9 @@
 " Maintainers:  Jean-Francois Yuen   <jfyuen@happycoders.org>
 "               Mike Leary           <leary@nwlink.com>
 "               Markus Mottl         <markus.mottl@gmail.com>
-" URL:          http://www.ocaml.info/vim/indent/ocaml.vim
-" Last Change:  2017 Jun 13
+" URL:          https://github.com/ocaml/vim-ocaml
+" Last Change:  2023 Aug 28 - Add undo_indent (Vim Project)
+"               2017 Jun 13
 "               2005 Jun 25 - Fixed multiple bugs due to 'else\nreturn ind' working
 "               2005 May 09 - Added an option to not indent OCaml-indents specially (MM)
 "               2013 June   - commented textwidth (Marc Weber)
@@ -24,13 +25,16 @@ setlocal indentkeys+=0=and,0=class,0=constraint,0=done,0=else,0=end,0=exception,
 setlocal nolisp
 setlocal nosmartindent
 
+let b:undo_indent = "setl et< inde< indk< lisp< si<"
+
 " At least Marc Weber and Markus Mottl do not like this:
 " setlocal textwidth=80
 
 " Comment formatting
 if !exists("no_ocaml_comments")
  if (has("comments"))
-   setlocal comments=sr:(*,mb:*,ex:*)
+   setlocal comments=sr:(*\ ,mb:\ ,ex:*)
+   setlocal comments^=sr:(**,mb:\ \ ,ex:*)
    setlocal fo=cqort
  endif
 endif

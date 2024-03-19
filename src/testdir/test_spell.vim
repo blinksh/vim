@@ -14,6 +14,8 @@ func TearDown()
   call delete('Xtest.latin1.add.spl')
   call delete('Xtest.latin1.spl')
   call delete('Xtest.latin1.sug')
+  " set 'encoding' to clear the word list
+  set encoding=utf-8
 endfunc
 
 func Test_wrap_search()
@@ -70,12 +72,27 @@ func Test_z_equal_on_invalid_utf8_word()
   bwipe!
 endfunc
 
+func Test_z_equal_on_single_character()
+  " this was decrementing the index below zero
+  new
+  norm a0\Ê
+  norm zW
+  norm z=
+
+  bwipe!
+endfunc
+
 " Test spellbadword() with argument
 func Test_spellbadword()
   set spell
 
   call assert_equal(['bycycle', 'bad'],  spellbadword('My bycycle.'))
   call assert_equal(['another', 'caps'], 'A sentence. another sentence'->spellbadword())
+
+  call assert_equal(['TheCamelWord', 'bad'], 'TheCamelWord asdf'->spellbadword())
+  set spelloptions=camel
+  call assert_equal(['asdf', 'bad'], 'TheCamelWord asdf'->spellbadword())
+  set spelloptions=
 
   set spelllang=en
   call assert_equal(['', ''],            spellbadword('centre'))
@@ -99,11 +116,15 @@ foobar/?
    set spelllang=Xwords.spl
    call assert_equal(['foobar', 'rare'], spellbadword('foo foobar'))
 
-  " Typo should not be detected without the 'spell' option.
+  " Typo should be detected even without the 'spell' option.
   set spelllang=en_gb nospell
   call assert_equal(['', ''], spellbadword('centre'))
-  call assert_equal(['', ''], spellbadword('My bycycle.'))
-  call assert_equal(['', ''], spellbadword('A sentence. another sentence'))
+  call assert_equal(['bycycle', 'bad'], spellbadword('My bycycle.'))
+  call assert_equal(['another', 'caps'], spellbadword('A sentence. another sentence'))
+
+  set spelllang=
+  call assert_fails("call spellbadword('maxch')", 'E756:')
+  call assert_fails("spelldump", 'E756:')
 
   call delete('Xwords.spl')
   call delete('Xwords')
@@ -111,7 +132,175 @@ foobar/?
   set spell&
 endfunc
 
-func Test_spellreall()
+func Test_spell_camelcase()
+  set spell spelloptions=camel
+  let words = [
+      \ 'UPPER',
+      \ 'lower',
+      \ 'mixedCase',
+      \ 'HTML',
+      \ 'XMLHttpRequest',
+      \ 'foo123bar',
+      \ '12345678',
+      \ 'HELLO123world',
+      \]
+
+  for word in words
+    call assert_equal(['', ''],  spellbadword(word))
+  endfor
+
+  set spell& spelloptions&
+endfunc
+
+func Test_spell_file_missing()
+  let s:spell_file_missing = 0
+  augroup TestSpellFileMissing
+    autocmd! SpellFileMissing * let s:spell_file_missing += 1
+  augroup END
+
+  set spell spelllang=ab_cd
+  let messages = GetMessages()
+  call assert_equal('Warning: Cannot find word list "ab.utf-8.spl" or "ab.ascii.spl"', messages[-1])
+  call assert_equal(1, s:spell_file_missing)
+
+  new XTestSpellFileMissing
+  augroup TestSpellFileMissing
+    autocmd! SpellFileMissing * bwipe
+  augroup END
+  call assert_fails('set spell spelllang=ab_cd', 'E937:')
+
+  " clean up
+  augroup TestSpellFileMissing
+    autocmd! SpellFileMissing
+  augroup END
+  augroup! TestSpellFileMissing
+  unlet s:spell_file_missing
+  set spell& spelllang&
+  %bwipe!
+endfunc
+
+func Test_spell_file_missing_bwipe()
+  " this was using a window that was wiped out in a SpellFileMissing autocmd
+  set spelllang=xy
+  au SpellFileMissing * n0
+  set spell
+  au SpellFileMissing * bw
+  snext somefile
+
+  au! SpellFileMissing
+  bwipe!
+  set nospell spelllang=en
+endfunc
+
+func Test_spelldump()
+  " In case the spell file is not found avoid getting the download dialog, we
+  " would get stuck at the prompt.
+  let g:en_not_found = 0
+  augroup TestSpellFileMissing
+    au! SpellFileMissing * let g:en_not_found = 1
+  augroup END
+  set spell spelllang=en
+  spellrare! emacs
+  if g:en_not_found
+    call assert_report("Could not find English spell file")
+  else
+    spelldump
+
+    " Check assumption about region: 1: us, 2: au, 3: ca, 4: gb, 5: nz.
+    call assert_equal('/regions=usaucagbnz', getline(1))
+    call assert_notequal(0, search('^theater/1$'))    " US English only.
+    call assert_notequal(0, search('^theatre/2345$')) " AU, CA, GB or NZ English.
+
+    call assert_notequal(0, search('^emacs/?$'))      " ? for a rare word.
+    call assert_notequal(0, search('^the the/!$'))    " ! for a wrong word.
+  endif
+
+  " clean up
+  unlet g:en_not_found
+  augroup TestSpellFileMissing
+    autocmd! SpellFileMissing
+  augroup END
+  augroup! TestSpellFileMissing
+  bwipe
+  set spell&
+endfunc
+
+func Test_spelldump_bang()
+  new
+  call setline(1, 'This is a sample sentence.')
+  redraw
+
+  " In case the spell file is not found avoid getting the download dialog, we
+  " would get stuck at the prompt.
+  let g:en_not_found = 0
+  augroup TestSpellFileMissing
+    au! SpellFileMissing * let g:en_not_found = 1
+  augroup END
+
+  set spell
+
+  if g:en_not_found
+    call assert_report("Could not find English spell file")
+  else
+    redraw
+    spelldump!
+
+    " :spelldump! includes the number of times a word was found while updating
+    " the screen.
+    " Common word count starts at 10, regular word count starts at 0.
+    call assert_notequal(0, search("^is\t11$"))    " common word found once.
+    call assert_notequal(0, search("^the\t10$"))   " common word never found.
+    call assert_notequal(0, search("^sample\t1$")) " regular word found once.
+    call assert_equal(0, search("^screen\t"))      " regular word never found.
+  endif
+
+  " clean up
+  unlet g:en_not_found
+  augroup TestSpellFileMissing
+    autocmd! SpellFileMissing
+  augroup END
+  augroup! TestSpellFileMissing
+  %bwipe!
+  set spell&
+endfunc
+
+func Test_spelllang_inv_region()
+  set spell spelllang=en_xx
+  let messages = GetMessages()
+  call assert_equal('Warning: region xx not supported', messages[-1])
+  set spell& spelllang&
+endfunc
+
+func Test_compl_with_CTRL_X_CTRL_K_using_spell()
+  " When spell checking is enabled and 'dictionary' is empty,
+  " CTRL-X CTRL-K in insert mode completes using the spelling dictionary.
+  new
+  set spell spelllang=en dictionary=
+
+  set ignorecase
+  call feedkeys("Senglis\<c-x>\<c-k>\<esc>", 'tnx')
+  call assert_equal(['English'], getline(1, '$'))
+  call feedkeys("SEnglis\<c-x>\<c-k>\<esc>", 'tnx')
+  call assert_equal(['English'], getline(1, '$'))
+
+  set noignorecase
+  call feedkeys("Senglis\<c-x>\<c-k>\<esc>", 'tnx')
+  call assert_equal(['englis'], getline(1, '$'))
+  call feedkeys("SEnglis\<c-x>\<c-k>\<esc>", 'tnx')
+  call assert_equal(['English'], getline(1, '$'))
+
+  set spelllang=en_us
+  call feedkeys("Stheat\<c-x>\<c-k>\<esc>", 'tnx')
+  call assert_equal(['theater'], getline(1, '$'))
+  set spelllang=en_gb
+  call feedkeys("Stheat\<c-x>\<c-k>\<esc>", 'tnx')
+  call assert_equal(['theatre'], getline(1, '$'))
+
+  bwipe!
+  set spell& spelllang& dictionary& ignorecase&
+endfunc
+
+func Test_spellrepall()
   new
   set spell
   call assert_fails('spellrepall', 'E752:')
@@ -126,6 +315,254 @@ func Test_spellreall()
   call assert_fails('spellrepall', 'E753:')
   set spell&
   bwipe!
+endfunc
+
+func Test_spell_dump_word_length()
+  " this was running over MAXWLEN
+  new
+  noremap 0 0a0zW0000000
+  sil! norm 0z=0
+  sil norm 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  sil! norm 0z=0
+
+  bwipe!
+  nunmap 0
+endfunc
+
+" Test spellsuggest({word} [, {max} [, {capital}]])
+func Test_spellsuggest()
+  " Verify suggestions are given even when spell checking is not enabled.
+  set nospell
+  call assert_equal(['march', 'March'], spellsuggest('marrch', 2))
+
+  set spell
+
+  " With 1 argument.
+  call assert_equal(['march', 'March'], spellsuggest('marrch')[0:1])
+
+  " With 2 arguments.
+  call assert_equal(['march', 'March'], spellsuggest('marrch', 2))
+
+  " With 3 arguments.
+  call assert_equal(['march'], spellsuggest('marrch', 1, 0))
+  call assert_equal(['March'], spellsuggest('marrch', 1, 1))
+
+  " Test with digits and hyphen.
+  call assert_equal('Carbon-14', spellsuggest('Carbon-15')[0])
+
+  " Comment taken from spellsuggest.c explains the following test cases:
+  "
+  " If there are more UPPER than lower case letters suggest an
+  " ALLCAP word.  Otherwise, if the first letter is UPPER then
+  " suggest ONECAP.  Exception: "ALl" most likely should be "All",
+  " require three upper case letters.
+  call assert_equal(['THIRD', 'third'], spellsuggest('thIRD', 2))
+  call assert_equal(['third', 'THIRD'], spellsuggest('tHIrd', 2))
+  call assert_equal(['Third'], spellsuggest('THird', 1))
+  call assert_equal(['All'],      spellsuggest('ALl', 1))
+
+  " Special suggestion for repeated 'the the'.
+  call assert_inrange(0, 2, index(spellsuggest('the the',   3), 'the'))
+  call assert_inrange(0, 2, index(spellsuggest('the   the', 3), 'the'))
+  call assert_inrange(0, 2, index(spellsuggest('The the',   3), 'The'))
+
+  call assert_fails("call spellsuggest('maxch', [])", 'E745:')
+  call assert_fails("call spellsuggest('maxch', 2, [])", 'E745:')
+
+  set spelllang=
+  call assert_fails("call spellsuggest('maxch')", 'E756:')
+  set spelllang&
+
+  set spell&
+endfunc
+
+" Test 'spellsuggest' option with methods fast, best and double.
+func Test_spellsuggest_option_methods()
+  set spell
+
+  for e in ['latin1', 'utf-8']
+    exe 'set encoding=' .. e
+
+    set spellsuggest=fast
+    call assert_equal(['Stick', 'Stitch'], spellsuggest('Stich', 2), e)
+
+    " With best or double option, "Stitch" should become the top suggestion
+    " because of better phonetic matching.
+    set spellsuggest=best
+    call assert_equal(['Stitch', 'Stick'], spellsuggest('Stich', 2), e)
+
+    set spellsuggest=double
+    call assert_equal(['Stitch', 'Stick'], spellsuggest('Stich', 2), e)
+  endfor
+
+  set spell& spellsuggest& encoding&
+endfunc
+
+" Test 'spellsuggest' option with value file:{filename}
+func Test_spellsuggest_option_file()
+  set spell spellsuggest=file:Xspellsuggest
+  call writefile(['emacs/vim',
+        \         'theribal/terrible',
+        \         'teribal/terrrible',
+        \         'terribal'],
+        \         'Xspellsuggest')
+
+  call assert_equal(['vim'],      spellsuggest('emacs', 2))
+  call assert_equal(['terrible'], spellsuggest('theribal',2))
+
+  " If the suggestion is misspelled (*terrrible* with 3 r),
+  " it should not be proposed.
+  " The entry for "terribal" should be ignored because of missing slash.
+  call assert_equal([], spellsuggest('teribal', 2))
+  call assert_equal([], spellsuggest('terribal', 2))
+
+  set spell spellsuggest=best,file:Xspellsuggest
+  call assert_equal(['vim', 'Emacs'],       spellsuggest('emacs', 2))
+  call assert_equal(['terrible', 'tribal'], spellsuggest('theribal', 2))
+  call assert_equal(['tribal'],             spellsuggest('teribal', 1))
+  call assert_equal(['tribal'],             spellsuggest('terribal', 1))
+
+  call delete('Xspellsuggest')
+  call assert_fails("call spellsuggest('vim')", "E484: Can't open file Xspellsuggest")
+
+  set spellsuggest& spell&
+endfunc
+
+" Test 'spellsuggest' option with value {number}
+" to limit the number of suggestions
+func Test_spellsuggest_option_number()
+  set spell spellsuggest=2,best
+  new
+
+  " We limited the number of suggestions to 2, so selecting
+  " the 1st and 2nd suggestion should correct the word, but
+  " selecting a 3rd suggestion should do nothing.
+  call setline(1, 'A baord')
+  norm $1z=
+  call assert_equal('A board', getline(1))
+
+  call setline(1, 'A baord')
+  norm $2z=
+  call assert_equal('A bard', getline(1))
+
+  call setline(1, 'A baord')
+  norm $3z=
+  call assert_equal('A baord', getline(1))
+
+  let a = execute('norm $z=')
+  call assert_equal(
+  \    "\n"
+  \ .. "Change \"baord\" to:\n"
+  \ .. " 1 \"board\"\n"
+  \ .. " 2 \"bard\"\n"
+  \ .. "Type number and <Enter> or click with the mouse (q or empty cancels): ", a)
+
+  set spell spellsuggest=0
+  call assert_equal("\nSorry, no suggestions", execute('norm $z='))
+
+  " Unlike z=, function spellsuggest(...) should not be affected by the
+  " max number of suggestions (2) set by the 'spellsuggest' option.
+  call assert_equal(['board', 'bard', 'broad'], spellsuggest('baord', 3))
+
+  set spellsuggest& spell&
+  bwipe!
+endfunc
+
+" Test 'spellsuggest' option with value expr:{expr}
+func Test_spellsuggest_option_expr()
+  " A silly 'spellsuggest' function which makes suggestions all uppercase
+  " and makes the score of each suggestion the length of the suggested word.
+  " So shorter suggestions are preferred.
+  func MySuggest()
+    let spellsuggest_save = &spellsuggest
+    set spellsuggest=3,best
+    let result = map(spellsuggest(v:val, 3), "[toupper(v:val), len(v:val)]")
+    let &spellsuggest = spellsuggest_save
+    return result
+  endfunc
+
+  set spell spellsuggest=expr:MySuggest()
+  call assert_equal(['BARD', 'BOARD', 'BROAD'], spellsuggest('baord', 3))
+
+  new
+  call setline(1, 'baord')
+  let a = execute('norm z=')
+  call assert_equal(
+  \    "\n"
+  \ .. "Change \"baord\" to:\n"
+  \ .. " 1 \"BARD\"\n"
+  \ .. " 2 \"BOARD\"\n"
+  \ .. " 3 \"BROAD\"\n"
+  \ .. "Type number and <Enter> or click with the mouse (q or empty cancels): ", a)
+
+  " With verbose, z= should show the score i.e. word length with
+  " our SpellSuggest() function.
+  set verbose=1
+  let a = execute('norm z=')
+  call assert_equal(
+  \    "\n"
+  \ .. "Change \"baord\" to:\n"
+  \ .. " 1 \"BARD\"                      (4 - 0)\n"
+  \ .. " 2 \"BOARD\"                     (5 - 0)\n"
+  \ .. " 3 \"BROAD\"                     (5 - 0)\n"
+  \ .. "Type number and <Enter> or click with the mouse (q or empty cancels): ", a)
+
+  set spell& spellsuggest& verbose&
+  bwipe!
+endfunc
+
+" Test for 'spellsuggest' expr errors
+func Test_spellsuggest_expr_errors()
+  " 'spellsuggest'
+  func MySuggest()
+    return range(3)
+  endfunc
+  set spell spellsuggest=expr:MySuggest()
+  call assert_equal([], spellsuggest('baord', 3))
+
+  " Test for 'spellsuggest' expression returning a non-list value
+  func! MySuggest2()
+    return 'good'
+  endfunc
+  set spellsuggest=expr:MySuggest2()
+  call assert_equal([], spellsuggest('baord'))
+
+  " Test for 'spellsuggest' expression returning a list with dict values
+  func! MySuggest3()
+    return [[{}, {}]]
+  endfunc
+  set spellsuggest=expr:MySuggest3()
+  call assert_fails("call spellsuggest('baord')", 'E731:')
+
+  set nospell spellsuggest&
+  delfunc MySuggest
+  delfunc MySuggest2
+  delfunc MySuggest3
+endfunc
+
+func Test_spellsuggest_timeout()
+  set spellsuggest=timeout:30
+  set spellsuggest=timeout:-123
+  set spellsuggest=timeout:999999
+  call assert_fails('set spellsuggest=timeout', 'E474:')
+  call assert_fails('set spellsuggest=timeout:x', 'E474:')
+  call assert_fails('set spellsuggest=timeout:-x', 'E474:')
+  call assert_fails('set spellsuggest=timeout:--9', 'E474:')
+endfunc
+
+func Test_spellsuggest_visual_end_of_line()
+  let enc_save = &encoding
+  set encoding=iso8859
+
+  " This was reading beyond the end of the line.
+  norm R00000000000
+  sil norm 0
+  sil! norm i00000)
+  sil! norm i00000)
+  call feedkeys("\<CR>")
+  norm z=
+
+  let &encoding = enc_save
 endfunc
 
 func Test_spellinfo()
@@ -290,9 +727,9 @@ func Test_zz_affix()
         \ ])
 
   call LoadAffAndDic(g:test_data_aff7, g:test_data_dic7)
-  call RunGoodBad("meea1 meea\xE9 bar prebar barmeat prebarmeat  leadprebar lead tail leadtail  leadmiddletail",
+  call RunGoodBad("meea1 meezero meea\xE9 bar prebar barmeat prebarmeat  leadprebar lead tail leadtail  leadmiddletail",
         \ "bad: mee meea2 prabar probarmaat middle leadmiddle middletail taillead leadprobar",
-        \ ["bar", "barmeat", "lead", "meea1", "meea\xE9", "prebar", "prebarmeat", "tail"],
+        \ ["bar", "barmeat", "lead", "meea1", "meea\xE9", "meezero", "prebar", "prebarmeat", "tail"],
         \ [
         \   ["bad", ["bar", "lead", "tail"]],
         \   ["mee", ["meea1", "meea\xE9", "bar"]],
@@ -327,6 +764,19 @@ func Test_zz_Numbers()
         \ ])
 endfunc
 
+" Affix flags
+func Test_zz_affix_flags()
+  call LoadAffAndDic(g:test_data_aff10, g:test_data_dic10)
+  call RunGoodBad("drink drinkable drinkables drinktable drinkabletable",
+	\ "bad: drinks drinkstable drinkablestable",
+        \ ["drink", "drinkable", "drinkables", "table"],
+        \ [['bad', []],
+	\ ['drinks', ['drink']],
+	\ ['drinkstable', ['drinktable', 'drinkable', 'drink table']],
+        \ ['drinkablestable', ['drinkabletable', 'drinkables table', 'drinkable table']],
+	\ ])
+endfunc
+
 function FirstSpellWord()
   call feedkeys("/^start:\n", 'tx')
   normal ]smm
@@ -344,8 +794,8 @@ endfunc
 func Test_zz_sal_and_addition()
   set enc=latin1
   set spellfile=
-  call writefile(g:test_data_dic1, "Xtest.dic")
-  call writefile(g:test_data_aff_sal, "Xtest.aff")
+  call writefile(g:test_data_dic1, "Xtest.dic", 'D')
+  call writefile(g:test_data_aff_sal, "Xtest.aff", 'D')
   mkspell! Xtest Xtest
   set spl=Xtest.latin1.spl spell
   call assert_equal('kbltykk', soundfold('goobledygoook'))
@@ -353,7 +803,7 @@ func Test_zz_sal_and_addition()
   call assert_equal('*fls kswts tl', soundfold('oeverloos gezwets edale'))
 
   "also use an addition file
-  call writefile(["/regions=usgbnz", "elequint/2", "elekwint/3"], "Xtest.latin1.add")
+  call writefile(["/regions=usgbnz", "elequint/2", "elekwint/3"], "Xtest.latin1.add", 'D')
   mkspell! Xtest.latin1.add.spl Xtest.latin1.add
 
   bwipe!
@@ -377,6 +827,10 @@ func Test_zz_sal_and_addition()
   set spl=Xtest_ca.latin1.spl
   call assert_equal("elequint", FirstSpellWord())
   call assert_equal("elekwint", SecondSpellWord())
+
+  bwipe!
+  set spellfile=
+  set spl&
 endfunc
 
 func Test_spellfile_value()
@@ -386,10 +840,9 @@ endfunc
 
 func Test_region_error()
   messages clear
-  call writefile(["/regions=usgbnz", "elequint/0"], "Xtest.latin1.add")
+  call writefile(["/regions=usgbnz", "elequint/0"], "Xtest.latin1.add", 'D')
   mkspell! Xtest.latin1.add.spl Xtest.latin1.add
   call assert_match('Invalid region nr in Xtest.latin1.add line 2: 0', execute('messages'))
-  call delete('Xtest.latin1.add')
   call delete('Xtest.latin1.add.spl')
 endfunc
 
@@ -399,6 +852,34 @@ func Test_zeq_crash()
   set maxmem=512 spell
   call feedkeys('iasdz=:\"', 'tx')
 
+  bwipe!
+endfunc
+
+" Check that z= works even when 'nospell' is set.  This test uses one of the
+" tests in Test_spellsuggest_option_number() just to verify that z= basically
+" works and that "E756: Spell checking is not enabled" is not generated.
+func Test_zeq_nospell()
+  new
+  set nospell spellsuggest=1,best
+  call setline(1, 'A baord')
+  try
+    norm $1z=
+    call assert_equal('A board', getline(1))
+  catch
+    call assert_report("Caught exception: " . v:exception)
+  endtry
+  set spell& spellsuggest&
+  bwipe!
+endfunc
+
+" Check that "E756: Spell checking is not possible" is reported when z= is
+" executed and 'spelllang' is empty.
+func Test_zeq_no_spelllang()
+  new
+  set spelllang= spellsuggest=1,best
+  call setline(1, 'A baord')
+  call assert_fails('normal $1z=', 'E756:')
+  set spelllang& spellsuggest&
   bwipe!
 endfunc
 
@@ -412,6 +893,36 @@ func Test_spell_long_word()
   redraw!
   bwipe!
   set nospell
+endfunc
+
+func Test_spellsuggest_too_deep()
+  " This was incrementing "depth" over MAXWLEN.
+  new
+  norm s000G00ý000000000000
+  sil norm ..vzG................vvzG0     v z=
+  bwipe!
+endfunc
+
+func Test_spell_good_word_invalid()
+  " This was adding a word with a 0x02 byte, which causes havoc.
+  enew
+  norm o0
+  sil! norm rzzWs00/
+  2
+  sil! norm VzGprzzW
+  sil! norm z=
+
+  bwipe!
+endfunc
+
+func Test_spell_good_word_slash()
+  " This caused E1280.
+  new
+  norm afoo /
+  1
+  norm zG
+
+  bwipe!
 endfunc
 
 func LoadAffAndDic(aff_contents, dic_contents)
@@ -466,6 +977,7 @@ func Test_spell_screendump()
   CheckScreendump
 
   let lines =<< trim END
+       call test_override('alloc_lines', 1)
        call setline(1, [
              \ "This is some text without any spell errors.  Everything",
              \ "should just be black, nothing wrong here.",
@@ -476,13 +988,102 @@ func Test_spell_screendump()
              \ ])
        set spell spelllang=en_nz
   END
-  call writefile(lines, 'XtestSpell')
+  call writefile(lines, 'XtestSpell', 'D')
   let buf = RunVimInTerminal('-S XtestSpell', {'rows': 8})
   call VerifyScreenDump(buf, 'Test_spell_1', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestSpell')
+endfunc
+
+func Test_spell_screendump_spellcap()
+  CheckScreendump
+
+  let lines =<< trim END
+       call test_override('alloc_lines', 1)
+       call setline(1, [
+             \ "   This line has a sepll error. and missing caps and trailing spaces.   ",
+             \ "another missing cap here.",
+             \ "",
+             \ "and here.",
+             \ "    ",
+             \ "and here."
+             \ ])
+       set spell spelllang=en
+  END
+  call writefile(lines, 'XtestSpellCap', 'D')
+  let buf = RunVimInTerminal('-S XtestSpellCap', {'rows': 8})
+  call VerifyScreenDump(buf, 'Test_spell_2', {})
+
+  " After adding word missing Cap in next line is updated
+  call term_sendkeys(buf, "3GANot\<Esc>")
+  call VerifyScreenDump(buf, 'Test_spell_3', {})
+
+  " Deleting a full stop removes missing Cap in next line
+  call term_sendkeys(buf, "5Gdd\<C-L>k$x")
+  call VerifyScreenDump(buf, 'Test_spell_4', {})
+
+  " Undo also updates the next line (go to command line to remove message)
+  call term_sendkeys(buf, "u:\<Esc>")
+  call VerifyScreenDump(buf, 'Test_spell_5', {})
+
+  " Folding an empty line does not remove Cap in next line
+  call term_sendkeys(buf, "uzfk:\<Esc>")
+  call VerifyScreenDump(buf, 'Test_spell_6', {})
+
+  " Folding the end of a sentence does not remove Cap in next line
+  " and editing a line does not remove Cap in current line
+  call term_sendkeys(buf, "Jzfkk$x")
+  call VerifyScreenDump(buf, 'Test_spell_7', {})
+
+  " Cap is correctly applied in the first row of a window
+  call term_sendkeys(buf, "\<C-E>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_spell_8', {})
+
+  " Adding an empty line does not remove Cap in "mod_bot" area
+  call term_sendkeys(buf, "zbO\<Esc>")
+  call VerifyScreenDump(buf, 'Test_spell_9', {})
+
+  " Multiple empty lines does not remove Cap in the line after
+  call term_sendkeys(buf, "O\<Esc>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_spell_10', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_spell_compatible()
+  CheckScreendump
+
+  let lines =<< trim END
+       call test_override('alloc_lines', 1)
+       call setline(1, [
+             \ "test "->repeat(20),
+             \ "",
+             \ "end",
+             \ ])
+       set spell cpo+=$
+  END
+  call writefile(lines, 'XtestSpellComp', 'D')
+  let buf = RunVimInTerminal('-S XtestSpellComp', {'rows': 8})
+
+  call term_sendkeys(buf, "51|C")
+  call VerifyScreenDump(buf, 'Test_spell_compatible_1', {})
+
+  call term_sendkeys(buf, "x")
+  call VerifyScreenDump(buf, 'Test_spell_compatible_2', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_z_equal_with_large_count()
+  split
+  set spell
+  call setline(1, "ff")
+  norm 0z=337203685477580
+  set nospell
+  bwipe!
 endfunc
 
 let g:test_data_aff1 = [
@@ -746,6 +1347,9 @@ let g:test_data_aff7 = [
       \"SFX 61003 Y 1",
       \"SFX 61003 0 meat .",
       \"",
+      \"SFX 0 Y 1",
+      \"SFX 0 0 zero .",
+      \"",
       \"SFX 391 Y 1",
       \"SFX 391 0 a1 .",
       \"",
@@ -757,7 +1361,7 @@ let g:test_data_aff7 = [
       \ ]
 let g:test_data_dic7 = [
       \"1234",
-      \"mee/391,111,9999",
+      \"mee/0,391,111,9999",
       \"bar/17,61003,123",
       \"lead/2",
       \"tail/123",
@@ -780,6 +1384,21 @@ let g:test_data_dic9 = [
       \"1234",
       \"foo",
       \"bar",
+      \ ]
+let g:test_data_aff10 = [
+      \"COMPOUNDRULE se",
+      \"COMPOUNDPERMITFLAG p",
+      \"",
+      \"SFX A Y 1",
+      \"SFX A 0 able/Mp .",
+      \"",
+      \"SFX M Y 1",
+      \"SFX M 0 s .",
+      \ ]
+let g:test_data_dic10 = [
+      \"1234",
+      \"drink/As",
+      \"table/e",
       \ ]
 let g:test_data_aff_sal = [
       \"SET ISO8859-1",
@@ -934,3 +1553,5 @@ let g:test_data_aff_sal = [
       \"SAL ZZ-                  _",
       \"SAL Z                    S",
       \ ]
+
+" vim: shiftwidth=2 sts=2 expandtab

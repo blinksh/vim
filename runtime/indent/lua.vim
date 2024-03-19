@@ -3,6 +3,7 @@
 " Maintainer:	Marcus Aurelius Farias <marcus.cf 'at' bol.com.br>
 " First Author:	Max Ischenko <mfi 'at' ukr.net>
 " Last Change:	2017 Jun 13
+"		2022 Sep 07: b:undo_indent added by Doug Kearns
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -18,12 +19,24 @@ setlocal indentkeys+=0=end,0=until
 
 setlocal autoindent
 
+let b:undo_indent = "setlocal autoindent< indentexpr< indentkeys<"
+
 " Only define the function once.
 if exists("*GetLuaIndent")
   finish
 endif
 
 function! GetLuaIndent()
+    let ignorecase_save = &ignorecase
+  try
+    let &ignorecase = 0
+    return GetLuaIndentIntern()
+  finally
+    let &ignorecase = ignorecase_save
+  endtry
+endfunction
+
+function! GetLuaIndentIntern()
   " Find a non-blank line above the current line.
   let prevlnum = prevnonblank(v:lnum - 1)
 
@@ -38,7 +51,7 @@ function! GetLuaIndent()
   let prevline = getline(prevlnum)
   let midx = match(prevline, '^\s*\%(if\>\|for\>\|while\>\|repeat\>\|else\>\|elseif\>\|do\>\|then\>\)')
   if midx == -1
-    let midx = match(prevline, '{\s*$')
+    let midx = match(prevline, '{\s*\%(--\%([^[].*\)\?\)\?$')
     if midx == -1
       let midx = match(prevline, '\<function\>\s*\%(\k\|[.:]\)\{-}\s*(')
     endif

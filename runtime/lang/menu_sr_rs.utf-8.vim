@@ -2,6 +2,7 @@
 " Maintainer: Aleksandar Jelenak <ajelenak AT yahoo.com>
 " Last Change:	Fri, 30 May 2003 10:17:39 Eastern Daylight Time
 " Adapted for VIM 8 by: Иван Пешић on 2017-12-28 12:05+0400
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -30,7 +31,7 @@ menutrans &About	      &О\ програму
 menutrans &File			    &Фајл
 menutrans &Open\.\.\.<Tab>:e	    &Отвори\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp &Подели-отвори\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	Отвори\ картицу\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Отвори\ картицу\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew	    &Нов<Tab>:enew
 menutrans &Close<Tab>:close	    &Затвори<Tab>:close
 menutrans &Save<Tab>:w		    &Сачувај<Tab>:w
