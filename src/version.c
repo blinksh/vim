@@ -25,7 +25,7 @@
 
 #include "version.h"
 
-__thread char		*Version = VIM_VERSION_SHORT;
+char		*Version = VIM_VERSION_SHORT;
 static __thread char	*mediumVersion = VIM_VERSION_MEDIUM;
 
 #if defined(HAVE_DATE_TIME) || defined(PROTO)

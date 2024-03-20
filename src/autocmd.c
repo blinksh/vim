@@ -658,7 +658,7 @@ free_all_autocmds(void)
 
 #if TARGET_OS_IPHONE
     // reset everything 
-    for (i = 0; i < NUM_EVENTS; i++) {
+    for (int i = 0; i < NUM_EVENTS; i++) {
     	first_autopat[i] = NULL; 
     	last_autopat[i] = NULL; 
     }
@@ -2444,7 +2444,7 @@ BYPASS_AU:
 }
 
 # ifdef FEAT_EVAL
-static __trhead char_u	*old_termresponse = NULL;
+static __thread char_u	*old_termresponse = NULL;
 static __thread char_u	*old_termu7resp = NULL;
 static __thread char_u	*old_termblinkresp = NULL;
 static __thread char_u	*old_termrbgresp = NULL;

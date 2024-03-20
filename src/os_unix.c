@@ -3562,14 +3562,14 @@ mch_free_mem(void)
     if (xterm_Shell != (Widget)0)
 	XtDestroyWidget(xterm_Shell);
 #  ifndef LESSTIF_VERSION
-    // Lesstif crashes here, lose some memory
+    /* Lesstif crashes here, lose some memory */
     if (xterm_dpy != NULL)
 	XtCloseDisplay(xterm_dpy);
     if (app_context != (XtAppContext)NULL)
     {
 	XtDestroyApplicationContext(app_context);
 #   ifdef FEAT_X11
-	x11_display = NULL; // freed by XtDestroyApplicationContext()
+	x11_display = NULL; /* freed by XtDestroyApplicationContext() */
 #   endif
     }
 #  endif
@@ -3585,6 +3585,7 @@ mch_free_mem(void)
 # if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
     VIM_CLEAR(signal_stack);
 # endif
+# ifdef FEAT_TITLE
     vim_free(oldtitle);
     vim_free(oldicon);
 # endif
@@ -5875,8 +5876,9 @@ finished:
 	    
 	    if (wait_pid != pid)
 		wait_pid = wait4pid(pid, &status);
+#if TARGET_OS_IPHONE
 	    if (_tid != NULL) pthread_cancel(_tid);
-	    
+#endif
 
 # ifdef FEAT_GUI
 	    // Close slave side of pty.  Only do this after the child has

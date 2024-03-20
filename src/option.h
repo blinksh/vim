@@ -1061,9 +1061,9 @@ EXTERN unsigned ve_flags;
 #define VE_NONEU	32      // "NONE"
 EXTERN long	p_verbose;	// 'verbose'
 #ifdef IN_OPTION_C
-__thread char_u	*p_vfile = (char_u *)""; // used before options are initialized
+char_u	*p_vfile = (char_u *)""; // used before options are initialized
 #else
-extern __thread char_u	*p_vfile;	// 'verbosefile'
+extern char_u	*p_vfile;	// 'verbosefile'
 #endif
 EXTERN int	p_warn;		// 'warn'
 EXTERN char_u	*p_wop;		// 'wildoptions'

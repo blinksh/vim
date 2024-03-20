@@ -3423,8 +3423,8 @@ static __thread hlf_T	hlID = (hlf_T)0;
     void
 f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_DIFF
-    linenr_T		lnum = tv_get_lnum(argvars);
+# ifdef FEAT_DIFF
+    linenr_T		lnum;
 #if !TARGET_OS_IPHONE
     static linenr_T	prev_lnum = 0;
     static varnumber_T	changedtick = 0;

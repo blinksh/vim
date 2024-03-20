@@ -2045,8 +2045,6 @@ f_trim(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = vim_strnsave(head, tail - head);
 }
 
-static char *e_printf = N_(e_insufficient_arguments_for_printf);
-
 /*
  * Get number argument from "idxp" entry in "tvs".  First entry is 1.
  */
@@ -2058,7 +2056,7 @@ tv_nr(typval_T *tvs, int *idxp)
     int		err = FALSE;
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
-	emsg(_(e_printf));
+	emsg(_(e_insufficient_arguments_for_printf));
     else
     {
 	++*idxp;
@@ -2085,7 +2083,7 @@ tv_str(typval_T *tvs, int *idxp, char_u **tofree)
     static char_u   numbuf[NUMBUFLEN];
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
-	emsg(_(e_printf));
+    emsg(_(e_insufficient_arguments_for_printf));
     else
     {
 	++*idxp;
@@ -2107,7 +2105,7 @@ tv_float(typval_T *tvs, int *idxp)
     double	f = 0;
 
     if (tvs[idx].v_type == VAR_UNKNOWN)
-	emsg(_(e_printf));
+	emsg(_(e_insufficient_arguments_for_printf));
     else
     {
 	++*idxp;

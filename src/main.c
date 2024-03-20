@@ -7,7 +7,8 @@
  * See README.txt for an overview of the Vim source code.
  */
 
-#define EXTERN __thread 
+#define EXTERN __thread
+#define EXTERN_S
 #include "vim.h"
 
 #ifdef __CYGWIN__

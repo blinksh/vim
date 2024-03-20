@@ -1590,7 +1590,7 @@ mouse_model_popup(void)
     return (p_mousem[0] == 'p');
 }
 
-static win_T *dragwin = NULL;	// window being dragged
+static __thread win_T *dragwin = NULL;	// window being dragged
 
 /*
  * Reset the window being dragged.  To be called when switching tab page.
@@ -1639,7 +1639,6 @@ static __thread win_T *click_in_popup_win = NULL;
 #endif
 static __thread int	prev_row = -1;
 static __thread int	prev_col = -1;
-static __thread win_T *dragwin = NULL;	// window being dragged
 static __thread int	did_drag = FALSE;	// drag was noticed
 #endif
     int
@@ -2283,6 +2282,7 @@ check_termcode_mouse(
     int		is_release, release_is_ambiguous;
     int		wheel_code = 0;
     int		current_button;
+#if !TARGET_OS_IPHONE
     static int	orig_num_clicks = 1;
     static int	orig_mouse_code = 0x0;
 #ifdef CHECK_DOUBLE_CLICK

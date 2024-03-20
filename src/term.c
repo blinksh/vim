@@ -101,10 +101,10 @@ typedef struct {
 # define TERMREQUEST_INIT {STATUS_GET, -1}
 
 // Request Terminal Version status:
-static __thread termrequest_T crv_status = TERMREQUEST_INIT;
+static termrequest_T crv_status = TERMREQUEST_INIT;
 
 // Request Cursor position report:
-static __thread termrequest_T u7_status = TERMREQUEST_INIT;
+static termrequest_T u7_status = TERMREQUEST_INIT;
 
 // Request xterm compatibility check:
 static termrequest_T xcc_status = TERMREQUEST_INIT;
@@ -112,7 +112,7 @@ static termrequest_T xcc_status = TERMREQUEST_INIT;
 #ifdef FEAT_TERMRESPONSE
 # ifdef FEAT_TERMINAL
 // Request foreground color report:
-static __thread termrequest_T rfg_status = TERMREQUEST_INIT;
+static termrequest_T rfg_status = TERMREQUEST_INIT;
 static __thread int fg_r = 0;
 static __thread int fg_g = 0;
 static __thread int fg_b = 0;
@@ -122,19 +122,18 @@ static __thread int bg_b = 255;
 # endif
 
 // Request background color report:
-static __thread termrequest_T rbg_status = TERMREQUEST_INIT;
+static termrequest_T rbg_status = TERMREQUEST_INIT;
 
 // Request cursor blinking mode report:
-static __thread termrequest_T rbm_status = TERMREQUEST_INIT;
+static termrequest_T rbm_status = TERMREQUEST_INIT;
 
 // Request cursor style report:
-static __thread  termrequest_T rcs_status = TERMREQUEST_INIT;
+static termrequest_T rcs_status = TERMREQUEST_INIT;
 
 // Request window's position report:
-static __thread termrequest_T winpos_status = TERMREQUEST_INIT;
+static termrequest_T winpos_status = TERMREQUEST_INIT;
 
-#if !TARGET_OS_IPHONE
-static __thread termrequest_T *all_termrequests[] = {
+static termrequest_T *all_termrequests[] = {
     &crv_status,
     &u7_status,
     &xcc_status,
@@ -156,6 +155,7 @@ static __thread termrequest_T *all_termrequests[] = {
 // OK    -> can write t_8u
 int write_t_8u_state = FALSE;
 #endif
+
 
 #ifdef HAVE_TGETENT
 /*
@@ -1429,7 +1429,7 @@ termgui_mch_get_rgb(guicolor_T color)
  * It is initialized with the default values by parse_builtin_tcap().
  * The values can be changed by setting the option with the same name.
  */
-__thread char_u *(term_strings[(int)KS_LAST + 1]);
+char_u *(term_strings[(int)KS_LAST + 1]);
 
 static __thread int	need_gather = FALSE;	    // need to fill termleader[]
 static __thread char_u	termleader[256 + 1];	    // for check_termcode()
@@ -1778,20 +1778,18 @@ get_term_entries(int *height, int *width)
     {
 	if (term_strings_not_set(string_names[i].dest))
 	{
-#if !TARGET_OS_IPHONE // iOS: tgetstring is forbidden on the AppStore
+    // #if !TARGET_OS_IPHONE // iOS: tgetstring is forbidden on the AppStore
+    // But, these are redefined by vim, so what?
 	    TERM_STR(string_names[i].dest) = TGETSTR(string_names[i].name, &tp);
-#endif
+      // #endif
 #ifdef FEAT_EVAL
 	    set_term_option_sctx_idx(string_names[i].name, -1);
 #endif
 	}
     }
 
-    /* tgetflag() returns 1 if the flag is present, 0 if not and
-     * possibly -1 if the flag doesn't exist. */
-
-#if !TARGET_OS_IPHONE // iOS: tgetflag is forbidden on the AppStore
-    // TODO: test if these should be set (_DB, _DA especially, related to scrolling).
+    // tgetflag() returns 1 if the flag is present, 0 if not and
+    // possibly -1 if the flag doesn't exist.
     if ((T_MS == NULL || T_MS == empty_option) && tgetflag("ms") > 0)
 	T_MS = (char_u *)"y";
     if ((T_XS == NULL || T_XS == empty_option) && tgetflag("xs") > 0)
@@ -1808,8 +1806,7 @@ get_term_entries(int *height, int *width)
     /*
      * get key codes
      */
-    // iOS: tgestr is forbidden on the AppStore
-    for (i = 0; key_names[i] != NULL; ++i) {
+    for (i = 0; key_names[i] != NULL; ++i)
 	if (find_termcode((char_u *)key_names[i]) == NULL)
 	{
 	    char_u *p = TGETSTR(key_names[i], &tp);
@@ -1821,39 +1818,29 @@ get_term_entries(int *height, int *width)
 			|| key_names[i][1] != 'l'))
 		add_termcode((char_u *)key_names[i], p, FALSE);
 	}
-    }
-#endif
-#if !TARGET_OS_IPHONE // iOS: tgetnum is forbidden on the AppStore
+
     if (*height == 0)
 	*height = tgetnum("li");
     if (*width == 0)
 	*width = tgetnum("co");
-#endif
-    
+
     /*
      * Get number of colors (if not done already).
      */
     if (term_strings_not_set(KS_CCO))
     {
-#if !TARGET_OS_IPHONE // iOS: tgetnum is forbidden on the AppStore
 	set_color_count(tgetnum("Co"));
-#endif
 #ifdef FEAT_EVAL
 	set_term_option_sctx_idx("Co", -1);
 #endif
     }
 
 # ifndef hpux
-#if !TARGET_OS_IPHONE // iOS: tgetstr is forbidden on the AppStore
     BC = (char *)TGETSTR("bc", &tp);
     UP = (char *)TGETSTR("up", &tp);
     char_u *p = TGETSTR("pc", &tp);
     if (p != NULL)
 	PC = *p;
-#else 
-    PC = NUL;
-    UP = "\x1b\x5b\x41";
-#endif // IPHONE
 # endif
 }
 #endif
@@ -2402,7 +2389,6 @@ free_cur_term(void)
     static char *
 invoke_tgetent(char_u *tbuf, char_u *term)
 {
-#if !TARGET_OS_IPHONE
     int	    i;
 
     // Note: Valgrind may report a leak here, because the library keeps one
@@ -2430,7 +2416,6 @@ invoke_tgetent(char_u *tbuf, char_u *term)
 	    return _(e_terminal_entry_not_found_in_termcap);
 #endif
     }
-#endif
     return NULL;
 }
 
@@ -2438,7 +2423,6 @@ invoke_tgetent(char_u *tbuf, char_u *term)
  * Some versions of tgetstr() have been reported to return -1 instead of NULL.
  * Fix that here.
  */
-#if !TARGET_OS_IPHONE
     static char_u *
 vim_tgetstr(char *s, char_u **pp)
 {
@@ -2449,11 +2433,9 @@ vim_tgetstr(char *s, char_u **pp)
 	p = NULL;
     return (char_u *)p;
 }
-#endif
-#endif /* HAVE_TGETENT */
+#endif // HAVE_TGETENT
 
 #if defined(HAVE_TGETENT) && (defined(UNIX) || defined(VMS) || defined(MACOS_X))
-#if !TARGET_OS_IPHONE
 /*
  * Get Columns and Rows from the termcap. Used after a window signal if the
  * ioctl() fails. It doesn't make sense to call tgetent each time if the "co"
@@ -2476,8 +2458,7 @@ getlinecol(
     if (*rp == 0)
 	*rp = tgetnum("li");
 }
-#endif
-#endif /* defined(HAVE_TGETENT) && defined(UNIX) */
+#endif // defined(HAVE_TGETENT) && defined(UNIX)
 
 /*
  * Get a string entry from the termcap and add it to the list of termcodes.
@@ -2570,9 +2551,7 @@ add_termcap_entry(char_u *name, int force)
 	    error_msg = invoke_tgetent(tbuf, term);
 	    if (error_msg == NULL)
 	    {
-#if !TARGET_OS_IPHONE
 		string = TGETSTR((char *)name, &tp);
-#endif
 		if (string != NULL && *string != NUL)
 		{
 		    add_termcode(name, string, FALSE);
@@ -2641,7 +2620,7 @@ term_is_gui(char_u *name)
 }
 #endif
 
-#if !defined(HAVE_TGETENT) || defined(AMIGA) || defined(PROTO) || TARGET_OS_IPHONE
+#if !defined(HAVE_TGETENT) || defined(AMIGA) || defined(PROTO)
 
     char_u *
 tltoa(unsigned long i)
@@ -2662,12 +2641,8 @@ tltoa(unsigned long i)
 }
 #endif
 
-#if !defined(HAVE_TGETENT) || TARGET_OS_IPHONE
+#ifndef HAVE_TGETENT
 
-#if TARGET_OS_IPHONE
-// tgoto is forbidden on the AppStore
-#define tgoto ios_tgoto
-#endif
 /*
  * minimal tgoto() implementation.
  * no padding and we only parse for %i %d and %+char
@@ -2987,7 +2962,7 @@ out_str(char_u *s)
     // avoid terminal strings being split up
     if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
 	out_flush();
-#ifdef HAVE_TGETENT && !TARGET_OS_IPHONE
+#ifdef HAVE_TGETENT
     tputs((char *)s, 1, TPUTSFUNCAST out_char_nf);
 #else
     while (*s)
@@ -3630,7 +3605,6 @@ win_new_shellsize(void)
     static int	old_Rows = 0;
     static int	old_Columns = 0;
 #endif
-
     if (old_Rows != Rows || old_Columns != Columns)
 	ui_new_shellsize();
     if (old_Rows != Rows)

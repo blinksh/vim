@@ -1405,7 +1405,9 @@ free_all_marks(void)
 #if TARGET_OS_IPHONE
 	{
 	    VIM_CLEAR(namedfm[i].fname);
-	    namedfm[i].time_set = 0; 
+#ifdef FEAT_VIMINFO
+	    namedfm[i].time_set = 0;
+#endif
 	    namedfm[i].fmark.fnum = 0; 
 	    namedfm[i].fmark.mark = (pos_T) {0, 0, 0}; 
 	}

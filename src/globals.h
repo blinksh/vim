@@ -540,8 +540,8 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 #define t_class			(static_types[84])
 #define t_const_class		(static_types[85])
 
-EXTERN type_T static_types[86]
-#ifdef DO_INIT
+EXTERN_S type_T static_types[86]
+#ifdef DO_INIT_S
 = {
     // 0: t_unknown
     {VAR_UNKNOWN, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
@@ -1645,9 +1645,9 @@ EXTERN char	breakat_flags[256];	// which characters are in 'breakat'
 #endif
 
 // These are in version.c, call init_longVersion() before use.
-extern __thread char *Version;
+extern char *Version;
 #if defined(HAVE_DATE_TIME) && defined(VMS) && defined(VAXC)
-extern __thread char longVersion[];
+extern char longVersion[];
 #else
 extern char *longVersion;
 #endif
@@ -1738,7 +1738,7 @@ EXTERN int bevalServers INIT(= 0);
 
 #ifdef CURSOR_SHAPE
 // the table is in misc2.c, because of initializations
-extern __thread cursorentry_T shape_table[SHAPE_IDX_COUNT];
+extern cursorentry_T shape_table[SHAPE_IDX_COUNT];
 #endif
 
 #ifdef FEAT_PRINTER

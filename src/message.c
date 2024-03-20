@@ -35,7 +35,7 @@ static char_u *msg_show_console_dialog(char_u *message, char_u *buttons, int dfl
 static __thread int	confirm_msg_used = FALSE;	// displaying confirm_msg
 static __thread char_u	*confirm_msg = NULL;		// ":confirm" message
 static __thread char_u	*confirm_msg_tail;		// tail of confirm_msg
-static __thread void display_confirm_msg(void);
+static void display_confirm_msg(void);
 #endif
 #ifdef FEAT_EVAL
 static __thread int emsg_to_channel_log = FALSE;

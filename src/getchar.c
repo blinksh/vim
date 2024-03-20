@@ -3171,10 +3171,8 @@ check_end_reg_executing(int advance)
  * Only returns one byte (of a multi-byte character).
  * K_SPECIAL and CSI may be escaped, need to get two more bytes then.
  */
-#ifdef FEAT_CMDWIN
 #if TARGET_OS_IPHONE
 static __thread int tc = 0;
-#endif
 #endif
 
     static int
@@ -3479,10 +3477,8 @@ vgetorpeek(int advance)
 
 		if (ex_normal_busy > 0)
 		{
-#ifdef FEAT_CMDWIN
 #if !TARGET_OS_IPHONE
 		    static int tc = 0;
-#endif
 #endif
 
 		    // No typeahead left and inside ":normal".  Must return

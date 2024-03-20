@@ -116,6 +116,7 @@ SRC_ALL =	\
 		src/ops.c \
 		src/option.c \
 		src/option.h \
+    src/optiondefs.c \
 		src/optiondefs.h \
 		src/optionstr.c \
 		src/popupmenu.c \

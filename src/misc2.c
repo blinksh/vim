@@ -2050,7 +2050,7 @@ vim_stat(const char *name, stat_T *stp)
  * Handling of cursor and mouse pointer shapes in various modes.
  */
 
-__thread cursorentry_T shape_table[SHAPE_IDX_COUNT] =
+cursorentry_T shape_table[SHAPE_IDX_COUNT] =
 {
     // The values will be filled in from the 'guicursor' and 'mouseshape'
     // defaults when Vim starts.

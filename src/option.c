@@ -82,6 +82,7 @@ static char *(p_paste_dep_opts[])  = {"autoindent", "expandtab", "ruler", "showm
 static void didset_options_sctx(int opt_flags, char **buf);
 #endif
 
+static __thread struct vimoption *options;
 
 /*
  * Initialize the 'shell' option to a default value.
@@ -558,10 +559,8 @@ set_init_default_encoding(void)
     void
 set_init_1(int clean_arg)
 {
-#if TARGET_OS_IPHONE
-  // re-initialize all options (needed because thread_local variables are not initialized)
-#include "options_init.h"
-#endif
+    set_init_default_options();
+    options = (*options_ptr);
 
 #ifdef FEAT_LANGMAP
     langmap_init();
@@ -923,14 +922,6 @@ free_all_options(void)
 	    // buffer-local option: free global value
 	    clear_string_option((char_u **)options[i].var);
     }
-#if TARGET_OS_IPHONE
-    // We need to reset the pointers:
-    // here, instead of in options_init. Why?
-    p_vsts = empty_option;
-    p_vts = empty_option;
-    // reset options now:
-#include "options_init.h"
-#endif
     free_operatorfunc_option();
     free_tagfunc_option();
 }
@@ -2881,8 +2872,6 @@ didset_options2(void)
     (void)did_set_clipboard(NULL);
 #endif
 #ifdef FEAT_VARTABS
-    // iOS: These are the options that were not reset. WHY?
-    // it breaks in tabstop_set
     vim_free(curbuf->b_p_vsts_array);
     (void)tabstop_set(curbuf->b_p_vsts, &curbuf->b_p_vsts_array);
     vim_free(curbuf->b_p_vts_array);
@@ -7625,7 +7614,6 @@ ExpandSettings(
     int		loop;
     int		is_term_opt;
     char_u	name_buf[MAX_KEY_NAME_LEN];
-    // iOS: not edited, so no need to move outside of the function (?)
     static char *(names[]) = {"all", "termcap"};
     int		ic = regmatch->rm_ic;	// remember the ignore-case flag
     int		fuzzy;

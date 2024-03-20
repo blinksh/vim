@@ -1508,7 +1508,6 @@ get_menu_names(expand_T *xp UNUSED, int idx)
     static int		did_alt_menu = FALSE;
 #define TBUFFER_LEN 256
     static char_u	tbuffer[TBUFFER_LEN]; //hack
-    char_u		*str;
 #ifdef FEAT_MULTI_LANG
     static  int		should_advance = FALSE;
 #endif

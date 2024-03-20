@@ -107,6 +107,7 @@ map_free(mapblock_T **mpp)
     mp->m_script_ctx = (sctx_T) {0, 0, 0, 0};	// SCTX where map was defined
     reset_last_used_map(mp);
 #endif
+#endif
     vim_free(mp);
 }
 

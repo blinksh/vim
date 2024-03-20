@@ -6889,10 +6889,11 @@ nv_esc(cmdarg_T *cap)
 	    {
 		char *ms = _("Type  :qa!  and press <Enter> to abandon all changes and exit Vim");
 
-		if (out_redir)
+		if (out_redir) {
 		    mch_errmsg(ms);
-		else
+    } else {
 		    msg(ms);
+    }
 	    }
 	    else
 	    {

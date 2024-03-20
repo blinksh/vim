@@ -219,14 +219,14 @@
 # endif
 #endif
 
-/* The Mac conversion stuff doesn't work under X11. */
-#if !TARGET_OS_IPHONE // It also does not work under iOS
+// The Mac conversion stuff doesn't work under X11.
+#if !TARTGET_OS_IPHONE
 #if defined(MACOS_X_DARWIN)
 # define MACOS_CONVERT
 #endif
-#endif 
-    
-/* Can't use "PACKAGE" here, conflicts with a Perl include file. */
+#endif
+
+// Can't use "PACKAGE" here, conflicts with a Perl include file.
 #ifndef VIMPACKAGE
 # define VIMPACKAGE	"vim"
 #endif
@@ -1879,7 +1879,7 @@ typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
  * actually defined and initialized.
  */
 #ifndef EXTERN
-# define EXTERN extern __thread 
+#define EXTERN extern __thread
 # define INIT(x)
 # define INIT2(a, b)
 # define INIT3(a, b, c)
@@ -1895,6 +1895,16 @@ typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
 #  define INIT5(a, b, c, d, e) = {a, b, c, d, e}
 #  define INIT6(a, b, c, d, e, f) = {a, b, c, d, e, f}
 #  define DO_INIT
+# endif
+#endif
+
+#ifndef EXTERN_S
+#define EXTERN_S extern
+# define INIT_S(x)
+#else
+# ifndef INIT_S
+#  define INIT_S(x) x
+#  define DO_INIT_S
 # endif
 #endif
 
@@ -2427,7 +2437,7 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 
 // This must come after including proto.h.
 // For VMS this is defined in macros.h.
-#if !defined(MSWIN) && !defined(VMS) && !defined(TARGET_OS_IPHONE)
+#if !defined(MSWIN) && !defined(VMS)
 # define mch_open(n, m, p)	open((n), (m), (p))
 # define mch_fopen(n, p)	fopen((n), (p))
 #endif
@@ -2921,20 +2931,6 @@ long elapsed(DWORD start_tick);
 #define REPTERM_DO_LT		2
 #define REPTERM_SPECIAL		4
 #define REPTERM_NO_SIMPLIFY	8
-#if TARGET_OS_IPHONE 
-#include "ios_error.h"
-#define isatty ios_isatty
-#define fork   ios_fork
-#undef ECHILD // waitpid() does not set errno = ECHILD
-extern int mch_open(const char *path, int oflag, mode_t mode);
-extern FILE* mch_fopen(const char *path, const char *mode);
-#undef mch_errmsg
-# define mch_errmsg(str)	{ fprintf(thread_stderr, "%s", (str)) ; fflush(thread_stderr); }
-#undef display_errors
-# define display_errors()	{ fflush(thread_stderr); fflush(thread_stdout); }
-#undef mch_msg
-# define mch_msg(str)		fprintf(thread_stdout, "%s", (str))
-#endif
 
 // Flags for find_special_key()
 #define FSK_KEYCODE	0x01	// prefer key code, e.g. K_DEL instead of DEL
