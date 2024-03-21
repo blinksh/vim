@@ -16229,7 +16229,7 @@ printf "%s\n" "yes, we need AppKit" >&6; }
       # LIBS="$LIBS -framework AppKit"
       # iOS, TODO: make this automatic 
       # LIBS="$LIBS -framework AppKit"
-      LIBS="-F ../Frameworks -framework ios_system $LIBS -framework UIKit -lobjc -framework Foundation -framework lua_ios "
+      LIBS="-F ../Frameworks -framework ios_system $LIBS -lobjc -framework UIKit -framework Foundation"
     fi
   else
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
