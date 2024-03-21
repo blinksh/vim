@@ -1,6 +1,9 @@
 #include "vim.h"
 #include "optiondefs.h"
 
+__thread struct vimoption (*options_ptr)[];
+__thread int OPTION_COUNT;
+
 void set_init_default_options() {
   // options[] is initialized here.
   // The order of the options MUST be alphabetic for ":set all" and findoption().

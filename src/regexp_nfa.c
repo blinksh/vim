@@ -7768,21 +7768,21 @@ nfa_regexec_multi(
 nfa_free_regexp_stuff(void)
 {
     // Also reset variables from nfa_regexp.c:
-    nfa_time_limit = NULL;
-    nfa_timed_out = 0;
-    nfa_time_count = 0;
-    nfa_re_flags = 0; 
-    post_start = NULL; 
-    post_end = NULL;
-    post_ptr = NULL;
-    nstate = 0;	// Number of states in the NFA.
-    istate = 0;	// Index in the state vector, used in alloc_state()
-    nfa_endp = NULL;
-    nfa_ll_index = 0;
-    state_ptr = 0; /* points to nfa_prog->state */
-    empty.start = NULL;
-    empty.out = NULL; 
-    nfa_match = 0;
+    /* nfa_time_limit = NULL; */
+    /* nfa_timed_out = 0; */
+    /* nfa_time_count = 0; */
+    /* nfa_re_flags = 0;  */
+    /* post_start = NULL;  */
+    /* post_end = NULL; */
+    /* post_ptr = NULL; */
+    /* nstate = 0;	// Number of states in the NFA. */
+    /* istate = 0;	// Index in the state vector, used in alloc_state() */
+    /* nfa_endp = NULL; */
+    /* nfa_ll_index = 0; */
+    /* state_ptr = 0; /\* points to nfa_prog->state *\/ */
+    /* empty.start = NULL; */
+    /* empty.out = NULL;  */
+    /* nfa_match = 0; */
 }
 #endif
 

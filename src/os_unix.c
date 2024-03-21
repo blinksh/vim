@@ -5179,7 +5179,7 @@ mch_call_shell_fork(
 	    reset_signals();		// handle signals normally
 	    UNBLOCK_SIGNALS(&curset);
 #if TARGET_OS_IPHONE
-	    signal(SIGWINCH, (RETSIGTYPE (*)())sig_winch);
+	    signal(SIGWINCH, (void (*)())sig_winch);
 #endif
 	    
 
@@ -5358,7 +5358,7 @@ mch_call_shell_fork(
 	    catch_int_signal();
 	    UNBLOCK_SIGNALS(&curset);
 #if TARGET_OS_IPHONE
-	    signal(SIGWINCH, (RETSIGTYPE (*)())sig_winch);
+	    signal(SIGWINCH, (void (*)())sig_winch);
 	    // iOS: listen to tty, write to output
 	    keyboardParameters kp;
 	    kp.toshell_fd = fd_toshell[1];
@@ -6091,7 +6091,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	reset_signals();		// handle signals normally
 	UNBLOCK_SIGNALS(&curset);
 #if TARGET_OS_IPHONE
-	    signal(SIGWINCH, (RETSIGTYPE (*)())sig_winch);
+	    signal(SIGWINCH, (void (*)())sig_winch);
 #endif
 
 # ifdef FEAT_EVAL
@@ -6384,13 +6384,14 @@ mch_job_status(job_T *job)
 # endif
     if (wait_pid == -1)
     {
-	int waitpid_errno = errno;
+  int waitpid_errno = errno;
+#ifndef TARGET_OS_IPHONE
 	if (waitpid_errno == ECHILD && mch_process_running(job->jv_pid))
 	    // The process is alive, but it was probably reparented (for
 	    // example by ptrace called by a debugger like lldb or gdb).
 	    // Note: This assumes that process IDs are not reused.
 	    return "run";
-
+#endif
 	// process must have exited
 	if (job->jv_status < JOB_ENDED)
 	    ch_log(job->jv_channel, "Job no longer exists: %s",

@@ -3060,14 +3060,6 @@ linewhite(linenr_T lnum)
  * Add the search count "[3/19]" to "msgbuf".
  * See update_search_stat() for other arguments.
  */
-#if TARGET_OS_IPHONE
-static __thread  pos_T   lastpos = {0, 0, 0};
-static __thread int	    cur = 0;
-static __thread int	    cnt = 0;
-static __thread int	    chgtick = 0;
-static __thread char_u   *lastpat = NULL;
-static __thread buf_T    *lbuf = NULL;
-#endif
     static void
 cmdline_search_stat(
     int		dirc,
@@ -3151,6 +3143,17 @@ cmdline_search_stat(
  * dirc == '/': find the next match
  * dirc == '?': find the previous match
  */
+#if TARGET_OS_IPHONE
+static __thread pos_T    lastpos = {0, 0, 0};
+static __thread int	    cur = 0;
+static __thread int	    cnt = 0;
+static __thread int	    exact_match = FALSE;
+static __thread int	    incomplete = 0;
+static __thread int	    last_maxcount = SEARCH_STAT_DEF_MAX_COUNT;
+static __thread int	    chgtick = 0;
+static __thread char_u   *lastpat = NULL;
+static __thread buf_T    *lbuf = NULL;
+#endif
     static void
 update_search_stat(
     int			dirc,
@@ -3165,7 +3168,7 @@ update_search_stat(
     int		    wraparound = FALSE;
     pos_T	    p = (*pos);
 #if !TARGET_OS_IPHONE
-    static  pos_T   lastpos = {0, 0, 0};
+    static pos_T    lastpos = {0, 0, 0};
     static int	    cur = 0;
     static int	    cnt = 0;
     static int	    exact_match = FALSE;

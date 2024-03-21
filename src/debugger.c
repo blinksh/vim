@@ -563,7 +563,6 @@ static void prof_clear_cache(void);
 // #define PROF_CACHE_LOG
 #else
 #define PROF_CLEAR_CACHE(gap) do {} while (0)
->>>>>>> 4e334d044
 #endif
 #define DBG_FUNC	1
 #define DBG_FILE	2

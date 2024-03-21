@@ -2841,96 +2841,13 @@ vim_regfree(regprog_T *prog)
 }
 
 #if defined(EXITFREE) || defined(PROTO)
-#if TARGET_OS_IPHONE
-void nfa_free_regexp_stuff(void); 
-static int bt_regexec_nl(
-	regmatch_T	*rmp,
-	char_u	*line,	/* string to match against */
-	colnr_T	col,	/* column to start looking for match */
-	int		line_lbr);
-static long bt_regexec_multi(
-    regmmatch_T	*rmp,
-    win_T	*win,		/* window in which to search or NULL */
-    buf_T	*buf,		/* buffer in which to search */
-    linenr_T	lnum,		/* nr of line to start looking for match */
-    colnr_T	col,		/* column to start looking for match */
-    proftime_T	*tm,		/* timeout limit or NULL */
-    int		*timed_out);	/* flag set on timeout or NULL */
-static regprog_T * nfa_regcomp(char_u *expr, int re_flags);
-static void nfa_regfree(regprog_T *prog);
-static int nfa_regexec_nl(
-    regmatch_T	*rmp,
-    char_u	*line,	/* string to match against */
-    colnr_T	col,	/* column to start looking for match */
-    int		line_lbr);
-static long nfa_regexec_multi(
-    regmmatch_T	*rmp,
-    win_T	*win,		/* window in which to search or NULL */
-    buf_T	*buf,		/* buffer in which to search */
-    linenr_T	lnum,		/* nr of line to start looking for match */
-    colnr_T	col,		/* column to start looking for match */
-    proftime_T	*tm,		/* timeout limit or NULL */
-    int		*timed_out);	/* flag set on timeout or NULL */
-#endif
-
     void
 free_regexp_stuff(void)
 {
     ga_clear(&regstack);
     ga_clear(&backpos);
-#if TARGET_OS_IPHONE
-    // We need to reset memory as well as free it:
-    VIM_CLEAR(reg_tofree);
-    reg_tofreelen = 0;
-    VIM_CLEAR(reg_prev_sub);
-    // reset variables:
-    done = FALSE;
-    regparse = NULL;	/* Input-scan pointer. */
-    prevchr_len = 0;	/* byte length of previous char */
-    regnpar = 0;	/* () count. */
-    regnzpar = 0;	/* \z() count. */
-    re_has_z = 0;	/* \z item detected */
-    reg_toolong = 0;	/* TRUE when offset out of range */
-    regflags = 0;	/* RF_ flags for prog */
-#if defined(FEAT_SYN_HL) || defined(PROTO)
-    had_eol = 0;	/* TRUE when EOL found by vim_regcomp() */
-#endif
-    regexp_engine = 0;
-    reg_magic = 0;	/* magicness of the pattern: */
-    reg_string = 0;	/* matching with a string instead of a buffer
-			   line */
-    reg_strict = 0;	/* "[abc" is illegal */
-    curchr = 0;		/* currently parsed character */
-    prevchr = 0;
-    prevprevchr = 0;	/* previous-previous character */
-    nextchr = 0;	/* used for ungetchr() */
-    bt_regengine = (regengine_T) { bt_regcomp, bt_regfree, bt_regexec_nl, bt_regexec_multi, (char_u *)"" };
-    nfa_regengine = (regengine_T) { nfa_regcomp, nfa_regfree, nfa_regexec_nl, nfa_regexec_multi, (char_u *)"" };
-    reg_cpo_lit = 0; /* 'cpoptions' contains 'l' flag */
-    reg_cpo_bsl = 0; /* 'cpoptions' contains '\' flag */
-    at_start = 0;	// True when on the first character
-    prev_at_start = 0;  // True when on the second character
-    rex_in_use = FALSE;
-    regstack = (garray_T) {0, 0, 0, 0, NULL};
-    backpos = (garray_T) {0, 0, 0, 0, NULL};
-    can_f_submatch = FALSE;
-    VIM_CLEAR(eval_result);
-    after_slash = FALSE; 
-    // also reset regexp_nfa:
-    nfa_free_regexp_stuff();
-    // and regexp_bt:
-    num_complex_braces = 0; /* Complex \{...} count */
-    regcode = NULL;	/* Code-emit pointer, or JUST_CALC_SIZE */
-    regsize = 0;	/* Code size. */
-    reg_toolong = 0; 
-    one_exactly = FALSE;	/* only do one char for EXACTLY */
-#ifdef DEBUG
-    regnarrate = 0;
-#endif
-#else
     vim_free(reg_tofree);
     vim_free(reg_prev_sub);
-#endif
 }
 #endif
 

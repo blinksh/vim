@@ -101,18 +101,18 @@ typedef struct {
 # define TERMREQUEST_INIT {STATUS_GET, -1}
 
 // Request Terminal Version status:
-static termrequest_T crv_status = TERMREQUEST_INIT;
+static __thread termrequest_T crv_status = TERMREQUEST_INIT;
 
 // Request Cursor position report:
-static termrequest_T u7_status = TERMREQUEST_INIT;
+static __thread termrequest_T u7_status = TERMREQUEST_INIT;
 
 // Request xterm compatibility check:
-static termrequest_T xcc_status = TERMREQUEST_INIT;
+static __thread termrequest_T xcc_status = TERMREQUEST_INIT;
 
 #ifdef FEAT_TERMRESPONSE
 # ifdef FEAT_TERMINAL
 // Request foreground color report:
-static termrequest_T rfg_status = TERMREQUEST_INIT;
+static __thread termrequest_T rfg_status = TERMREQUEST_INIT;
 static __thread int fg_r = 0;
 static __thread int fg_g = 0;
 static __thread int fg_b = 0;
@@ -122,30 +122,19 @@ static __thread int bg_b = 255;
 # endif
 
 // Request background color report:
-static termrequest_T rbg_status = TERMREQUEST_INIT;
+static __thread termrequest_T rbg_status = TERMREQUEST_INIT;
 
 // Request cursor blinking mode report:
-static termrequest_T rbm_status = TERMREQUEST_INIT;
+static __thread termrequest_T rbm_status = TERMREQUEST_INIT;
 
 // Request cursor style report:
-static termrequest_T rcs_status = TERMREQUEST_INIT;
+static __thread termrequest_T rcs_status = TERMREQUEST_INIT;
 
 // Request window's position report:
-static termrequest_T winpos_status = TERMREQUEST_INIT;
+static __thread termrequest_T winpos_status = TERMREQUEST_INIT;
 
-static termrequest_T *all_termrequests[] = {
-    &crv_status,
-    &u7_status,
-    &xcc_status,
-#  ifdef FEAT_TERMINAL
-    &rfg_status,
-#  endif
-    &rbg_status,
-    &rbm_status,
-    &rcs_status,
-    &winpos_status,
-    NULL
-};
+// Terminal requests, assume are going to be static
+// static __thread termrequest_T *all_termrequests[] = NULL;
 
 // The t_8u code may default to a value but get reset when the term response is
 // received.  To avoid redrawing too often, only redraw when t_8u is not reset
@@ -1429,7 +1418,7 @@ termgui_mch_get_rgb(guicolor_T color)
  * It is initialized with the default values by parse_builtin_tcap().
  * The values can be changed by setting the option with the same name.
  */
-char_u *(term_strings[(int)KS_LAST + 1]);
+__thread char_u *(term_strings[(int)KS_LAST + 1]);
 
 static __thread int	need_gather = FALSE;	    // need to fill termleader[]
 static __thread char_u	termleader[256 + 1];	    // for check_termcode()
@@ -1470,7 +1459,7 @@ typedef struct {
 // table size
 #define TPR_COUNT		    5
 
-static termprop_T term_props[TPR_COUNT];
+static __thread termprop_T term_props[TPR_COUNT];
 
 /*
  * Initialize the term_props table.
@@ -3055,7 +3044,21 @@ termrequest_any_pending(void)
 {
     int	    i;
     time_t  now = time(NULL);
-
+    termrequest_T
+        *all_termrequests[] = {
+          &crv_status,
+          &u7_status,
+          &xcc_status,
+#  ifdef FEAT_TERMINAL
+          &rfg_status,
+#  endif
+          &rbg_status,
+          &rbm_status,
+          &rcs_status,
+          &winpos_status,
+          NULL
+        };
+    
     for (i = 0; all_termrequests[i] != NULL; ++i)
     {
 	if (all_termrequests[i]->tr_progress == STATUS_SENT)
@@ -3902,7 +3905,7 @@ settmode(tmode_T tmode)
      */
     if (tmode != cur_tmode)
     {
-#ifdef FEAT_TERMRESPONSE
+#if defined(FEAT_TERMRESPONSE) && defined(HAVE_TGETENT)
 # ifdef FEAT_GUI
 	if (!gui.in_use && !gui.starting)
 # endif

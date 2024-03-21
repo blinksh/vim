@@ -78,7 +78,7 @@ static __thread char *(main_errors[]) =
 static __thread mparm_T	params;
 
 #ifdef _IOLBF
-static void *s_vbuf = NULL;		// buffer for setvbuf()
+static __thread void *s_vbuf = NULL;		// buffer for setvbuf()
 #endif
 
 #ifndef NO_VIM_MAIN	// skip this for unittests
@@ -104,7 +104,7 @@ main
 #if TARGET_OS_IPHONE
     // TODO: re-init variables. esp. "curwin"
     // we are reading input from thread_stdin
-#include "globals_init.h" // reset all variables from globals.h
+    // #include "globals_init.h" // reset all variables from globals.h
     read_cmd_fd = fileno(thread_stdin);
     start_dir = NULL; 
     has_dash_c_arg = FALSE;

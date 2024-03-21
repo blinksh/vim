@@ -253,6 +253,9 @@
 
 #if TARGET_OS_IPHONE 
 // These are forbidden on the AppStore for iOS
+#  undef HAVE_TGETENT
+// Needed to fully disable terminal with no TGETENT. Couldn't find flag
+#  undef FEAT_TERMRESPONSE
 #  undef OSPEED_EXTERN
 #  undef UP_BC_PC_EXTERN
 #endif 
