@@ -3130,12 +3130,16 @@ term_get_winpos(int *x, int *y, varnumber_T timeout)
 #  endif
 # endif
 
+#endif
+
+// iOS: Use a dummy implementation as we have TGETENT disabled.
+// Otherwise linker will complain as it doesn't have it in ncurses.h
     void
 term_set_winsize(int height, int width)
 {
     OUT_STR(tgoto((char *)T_CWS, width, height));
 }
-#endif
+// #endif
 
     void
 term_font(int n)

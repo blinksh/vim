@@ -12726,8 +12726,8 @@ then :
 printf "%s\n" "OK" >&6; }
 else
 	  # iOS: force yes
-    $as_echo "OK" >&6; 
-    #  as_fn_error $? "FAILED" "$LINENO" 5
+    # $as_echo "OK" >&6; 
+    as_fn_error $? "FAILED" "$LINENO" 5
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
@@ -12848,11 +12848,11 @@ then :
 printf "%s\n" "yes" >&6; }
 else
 	  # iOS: force yes on tgetent()
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-      $as_echo "yes" >&6; } 	
-    #   as_fn_error $? "NOT FOUND!
-    #      You need to install a terminal library; for example ncurses.
-    #      Or specify the name of the library with --with-tlib." "$LINENO" 5
+    #{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+    #  $as_echo "yes" >&6; } 	
+       as_fn_error $? "NOT FOUND!
+          You need to install a terminal library; for example ncurses.
+          Or specify the name of the library with --with-tlib." "$LINENO" 5
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext

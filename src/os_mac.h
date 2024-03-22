@@ -251,11 +251,12 @@
 // A Mac constant causing big problem to syntax highlighting
 #define UNKNOWN_CREATOR '\?\?\?\?'
 
-#if TARGET_OS_IPHONE 
-// These are forbidden on the AppStore for iOS
+#if TARGET_OS_IPHONE
+// Disable tgetent. All functions were already disabled in code.
 #  undef HAVE_TGETENT
-// Needed to fully disable terminal with no TGETENT. Couldn't find flag
+// Couldn't find the TERMRESPONSE flag
 #  undef FEAT_TERMRESPONSE
+// These are forbidden on the AppStore for iOS
 #  undef OSPEED_EXTERN
 #  undef UP_BC_PC_EXTERN
 #endif 
