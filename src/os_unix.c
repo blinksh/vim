@@ -3911,6 +3911,12 @@ mch_settmode(tmode_T tmode)
     void
 get_stty(void)
 {
+#if TARGET_OS_IPHONE
+  // Xterm fixes to the termcap for iOS.
+  // http://www.afterstep.org/keyboard.html
+  add_termcode((char_u *)"kb", (char_u *)DEL_STR, FALSE);
+  add_termcode((char_u *)"kD", (char_u *)"\033[3~", FALSE);
+#else
     ttyinfo_T	info;
     char_u	buf[2];
     char_u	*p;
@@ -3927,6 +3933,7 @@ get_stty(void)
     p = find_termcode((char_u *)"kD");
     if (p != NULL && p[0] == buf[0] && p[1] == buf[1])
 	do_fixdel(NULL);
+#endif
 }
 
 /*
