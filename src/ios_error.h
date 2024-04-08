@@ -68,6 +68,10 @@ extern __thread FILE* thread_stderr;
 #define putenv ios_putenv
 #define fchdir ios_fchdir
 
+#undef chdir
+extern int chdir(const char *path);
+  extern int chdir_nolock(const char *path);
+
 extern int ios_executable(const char* cmd); // is this command part of the "shell" commands?
 extern int ios_system(const char* inputCmd); // execute this command (executable file or builtin command)
 extern FILE *ios_popen(const char *command, const char *type); // Execute this command and pipe the result

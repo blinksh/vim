@@ -425,7 +425,7 @@ mch_chdir(char *path)
 #ifdef VMS
     return chdir(vms_fixfilename(path));
 #else
-    return chdir(path);
+    return chdir_nolock(path);
 #endif
 }
 
@@ -2658,6 +2658,14 @@ strerror(int err)
     int
 mch_dirname(char_u *buf, int len)
 {
+#if TARGET_OS_IPHONE
+  // NOTE This may work best as a getcwd function in ios_system
+  char *pwd = ios_getenv("PWD");
+  strncpy(buf, pwd, len);
+  buf[len-1] = '\0';
+  return OK;
+#endif
+
 #if defined(USE_GETCWD)
     if (getcwd((char *)buf, len) == NULL)
     {

@@ -665,6 +665,10 @@ do_cmdline(
 #endif
 #if !TARGET_OS_IPHONE
     static int	call_depth = 0;		/* recursiveness */
+#else
+    char_u dirname[MAXPATHL];
+    mch_dirname(dirname, MAXPATHL);
+    mch_chdir(dirname);
 #endif
 #ifdef FEAT_EVAL
     // For every pair of do_cmdline()/do_one_cmd() calls, use an extra memory
