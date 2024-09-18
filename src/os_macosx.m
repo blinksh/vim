@@ -583,7 +583,10 @@ mch_open(const char *path, int oflag, mode_t mode)
 {
     int returnValue = open(path, oflag, mode);
     if (returnValue >= 0) 
-	return returnValue;
+      return returnValue;
+    // Ignore bookmarks on Blink.
+    return -1;
+
     // open() has failed. We assume it is for permission issues, and try to get permission:
     // Get dictionary of all permission bookmarks
     // Do not use bookmarks if path is inside ~/Documents or $APPDIR (vim calls mch_open *a lot*)
@@ -643,7 +646,8 @@ mch_fopen(const char *path, const char * mode)
 {
     FILE* returnValue = fopen(path, mode);
     if (returnValue != NULL) 
-	return returnValue;
+      return returnValue;
+    return NULL;
     // fopen() has failed. We assume it is for permission issues, and try to get permission:
     // Get dictionary of all permission bookmarks
     // Do not use bookmarks if path is inside $HOME or $APPDIR 
