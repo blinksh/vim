@@ -9,8 +9,9 @@ SIM_SDKROOT=$(xcrun --sdk iphonesimulator --show-sdk-path)
 
 echo "Building for iOS:"
 FRAMEWORKS=$PWD/Frameworks_iOS
-# rm Frameworks
-# ln -s Frameworks Frameworks_iOS
+mkdir -p $FRAMEWORKS
+rm $FRAMEWORKS/ios_system.framework
+ln -s $PWD/Frameworks/ios_system.xcframework/ios-arm64/ios_system.framework $FRAMEWORKS/ios_system.framework
 
 make distclean
 # 1) configure
@@ -50,11 +51,11 @@ signature=${framework//_/-}
 plutil -replace CFBundleIdentifier -string Nicolas-Holzschuch.$signature  $FRAMEWORKS/$framework.framework/Info.plist
 install_name_tool -id @rpath/$framework.framework/$framework  $FRAMEWORKS/$framework.framework/$framework
 
-
 echo "Building for Simulator:"
 FRAMEWORKS=$PWD/Frameworks_Simulator
-# rm Frameworks
-# ln -s Frameworks Frameworks_Simulator
+mkdir -p $FRAMEWORKS
+rm $FRAMEWORKS/ios_system.framework
+ln -s $PWD/Frameworks/ios_system.xcframework/ios-arm64_x86_64-simulator/ios_system.framework $FRAMEWORKS/ios_system.framework
 
 make distclean
 # --disable-channel
